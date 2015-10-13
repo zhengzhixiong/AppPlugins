@@ -1,0 +1,41 @@
+{
+  "name": "cordova-plugin-jmax",
+  "version": "1.0.0",
+  "description": "Jmax provide all app plugins.",
+  "cordova": {
+    "id": "cordova-plugin-jmax",
+    "platforms": [
+      "ios",
+      "android",
+      "wp8",
+      "blackberry10"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhengzhixiong/AppPlugins.git"
+  },
+  "keywords": [
+    "Jmax",
+    "App",
+    "Plugins",
+    "Cordova",
+    "ecosystem:cordova",
+    "cordova-ios",
+    "cordova-android",
+    "cordova-wp8",
+    "cordova-blackberry10"
+  ],
+  "engines": [
+    {
+      "name": "cordova",
+      "version": ">=3.0.0"
+    }
+  ],
+  "author": "max.zheng",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/zhengzhixiong/AppPlugins/issues"
+  },
+  "homepage": "https://github.com/zhengzhixiong/AppPlugins/blob/master/README.md"
+}
