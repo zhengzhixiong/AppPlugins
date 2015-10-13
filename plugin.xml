@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+	xmlns:android="http://schemas.android.com/apk/res/android" 
+	id="cordova-plugin-jmax"
+	version="1.0.0">
+	<!-- 插件名称 -->
+	<name>JmaxAppPlugin</name>
+	<!-- 插件描述 -->
+	<description>
+		Jmax provide all app plugins
+	</description>
+	<!-- 插件作者 -->
+	<author>max.zheng</author>
+	<!-- 插件license -->
+	<license>MIT</license>
+	<!--关键字 -->
+	<keywords>jmax,app,cordova,plugins </keywords>
+	<repo>https://github.com/zhengzhixiong/AppPlugins.git</repo>
+	<issue>https://github.com/zhengzhixiong/AppPlugins/issues</issue>
+	<!-- 插件所依赖的cordova版本 -->
+	<engines>
+		<engine name="cordova" version=">=3.0.0" />
+	</engines>
+	<!-- 插件模块，src指明js文件路径，clobbers指明前台js调用的接口名,这个配置会被ionic自动编译到项目的platforms/android/assets/cordova_plugin.js 
+		文件中,其中本配置文件中的开头的id指定了src所编译后存放的目录，version指定了本插件的版本 -->
+	<js-module src="www/jmaxAppPlugin.js" name="Jmax">
+		<clobbers target="JmaxPlugin" />
+	</js-module>
+
+	<!-- android插件配置信息-->
+	<platform name="android">
+	    <!-- 配置Android项目中的 res/xml/config.xml 文件，编译后会将feature配置到widget中，注意这个feature的name 值，这个值和我们www/jmaxAppPlugin.js文件中的第三个参数对应-->
+		<config-file target="res/xml/config.xml" parent="/*">
+			<feature name="JmaxAppPlugin">
+				<param name="android-package" value="com.jmax.plugins.JmaxAppPlugin" />
+			</feature>
+		</config-file>
+		<!-- 指定编译后的文件位置 -->
+		<source-file src="src/android/com/jmax/plugins/JmaxAppPlugin.java"
+			target-dir="src/com/jmax/plugins/" />
+	</platform>
+</plugin>
