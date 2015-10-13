@@ -31,15 +31,14 @@ import android.widget.Toast;
 public class JmaxAppPlugin extends CordovaPlugin {
 	public boolean execute(String action, JSONArray args,
 			CallbackContext callbackContext) throws JSONException {
-		if (action.equals("toast")) {
+		if ("toast".equals(action)) {
 			this.toast(args.getString(0), callbackContext);
-			return true;
 		}
-		return false;
+		callbackContext.success();
+		return true;
 	}
-	
+
 	/**
-	 * 
 	 * 
 	 * @author max.zheng
 	 * @create 2015-10-13下午8:16:04
@@ -47,12 +46,11 @@ public class JmaxAppPlugin extends CordovaPlugin {
 	 * @param msg
 	 * @param callbackContext
 	 */
-	private void toast(final String msg,final CallbackContext callbackContext)
-	{
-		 this.cordova.getActivity().runOnUiThread(new Runnable() {
-            public void run() {
-            	Toast.makeText(cordova.getActivity(), msg, 1000).show();
-            }
-        });
+	private void toast(final String msg, final CallbackContext callbackContext) {
+		this.cordova.getActivity().runOnUiThread(new Runnable() {
+			public void run() {
+				Toast.makeText(cordova.getActivity(), msg, 1000).show();
+			}
+		});
 	}
 }

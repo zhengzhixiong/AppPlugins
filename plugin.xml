@@ -36,7 +36,6 @@
 			</feature>
 		</config-file>
 		<!-- 指定编译后的文件位置 -->
-		<source-file src="src/android/com/jmax/plugins/JmaxAppPlugin.java"
-			target-dir="src/com/jmax/plugins/" />
+		<source-file src="src/android/com/jmax/plugins/JmaxAppPlugin.java" target-dir="src/com/jmax/plugins/" />
 	</platform>
 </plugin>
