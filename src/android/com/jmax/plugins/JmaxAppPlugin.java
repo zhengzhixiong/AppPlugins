@@ -19,6 +19,8 @@ import org.apache.cordova.CordovaPlugin;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import com.dnk.smart.communication.udp.SendHandler;
+
 import android.widget.Toast;
 
 /**
@@ -33,6 +35,10 @@ public class JmaxAppPlugin extends CordovaPlugin {
 			CallbackContext callbackContext) throws JSONException {
 		if ("toast".equals(action)) {
 			this.toast(args.getString(0), callbackContext);
+			return true;
+		}else if ("test".equals(action)) {
+			boolean rs = SendHandler.initLocalSocket(16000);
+			callbackContext.success(rs+"---"+args.getString(0));
 			return true;
 		}
 		callbackContext.success();

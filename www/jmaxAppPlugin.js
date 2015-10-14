@@ -12,5 +12,9 @@ function JmaxAppPlugin() {}
 JmaxAppPlugin.prototype.toast = function(message) {
 	 exec(null, null, "JmaxAppPlugin", "toast", [message]);
 };
-
+JmaxAppPlugin.prototype.test = function(message) {
+	 exec(function(rs){
+     	alert(rs);
+     }, null, "JmaxAppPlugin", "test", [message]);
+};
 module.exports = new JmaxAppPlugin();
