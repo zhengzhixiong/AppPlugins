@@ -33,6 +33,7 @@ public class JmaxAppPlugin extends CordovaPlugin {
 			CallbackContext callbackContext) throws JSONException {
 		if ("toast".equals(action)) {
 			this.toast(args.getString(0), callbackContext);
+			return true;
 		}
 		callbackContext.success();
 		return true;
