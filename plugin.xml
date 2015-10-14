@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-	xmlns:android="http://schemas.android.com/apk/res/android" 
+        xmlns:android="http://schemas.android.com/apk/res/android"
 	id="cordova-plugin-jmax"
 	version="1.0.0">
 	<!-- 插件名称 -->
@@ -21,7 +21,7 @@
 	<engines>
 		<engine name="cordova" version=">=3.0.0" />
 	</engines>
-	<!-- 插件模块，src指明js文件路径，clobbers指明前台js调用的接口名,这个配置会被ionic自动编译到项目的platforms/android/assets/cordova_plugin.js 
+	<!-- 插件模块，src指明js文件路径，clobbers指明前台js调用的接口名,这个配置会被ionic自动编译到项目的platforms/android/assets/cordova_plugin.js
 		文件中,其中本配置文件中的开头的id指定了src所编译后存放的目录，version指定了本插件的版本 -->
 	<js-module src="www/jmaxAppPlugin.js" name="Jmax">
 		<clobbers target="JmaxPlugin" />

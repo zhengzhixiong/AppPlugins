@@ -22,7 +22,7 @@ import org.json.JSONException;
 import android.widget.Toast;
 
 /**
- * 
+ *
  * @author max.zheng
  * @create 2015-10-13下午8:12:55
  * @since 1.0
@@ -40,7 +40,7 @@ public class JmaxAppPlugin extends CordovaPlugin {
 	}
 
 	/**
-	 * 
+	 *
 	 * @author max.zheng
 	 * @create 2015-10-13下午8:16:04
 	 * @modified by
