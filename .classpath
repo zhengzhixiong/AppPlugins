@@ -4,6 +4,8 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/CordovaLib"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.7"/>
 	<classpathentry kind="lib" path="F:/android/sdk2/platforms/android-22/android.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/SmartHomeCommunication"/>
 	<classpathentry kind="lib" path="src/android/DnkSmartCommunication-1.0.0.jar"/>
+	<classpathentry kind="lib" path="src/android/gson-1.6.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

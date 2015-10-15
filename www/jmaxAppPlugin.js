@@ -17,4 +17,273 @@ JmaxAppPlugin.prototype.test = function(message) {
      	alert(rs);
      }, null, "JmaxAppPlugin", "test", [message]);
 };
+//初始化本地端口服务，true or false，记得不要多吃初始化
+JmaxAppPlugin.prototype.initLocalServer = function(port,callback) {
+	 exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "initLocalServer", [port]);
+};
+//控制场景
+JmaxAppPlugin.prototype.controlScene = function(ip,port,sceneNo,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "controlScene", [ip,port,sceneNo]);
+};
+//灯光控制
+JmaxAppPlugin.prototype.controlLight = function(ip,port,areaNo,deviceNo,actionType,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "controlLight", [ip,port,areaNo,deviceNo,actionType]);
+};
+
+//灯光状态读取
+JmaxAppPlugin.prototype.readLightStatus = function(ip,port,areaNo,deviceNo,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "readLightStatus", [ip,port,areaNo,deviceNo]);
+};
+
+//窗帘控制
+JmaxAppPlugin.prototype.controlCurtain = function(ip,port,areaNo,deviceNo,actionType,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "controlCurtain", [ip,port,areaNo,deviceNo,actionType]);
+};
+
+//窗帘状态读取
+JmaxAppPlugin.prototype.readCurtainStatus = function(ip,port,areaNo,deviceNo,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "readCurtainStatus", [ip,port,areaNo,deviceNo]);
+};
+
+//中央空调控制
+JmaxAppPlugin.prototype.controlAir = function(ip,port,areaNo,deviceNo,mode,speed,temp,action,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "controlAir", [ip,port,areaNo,deviceNo,mode,speed,temp,action]);
+};
+
+//中央空调状态读取
+JmaxAppPlugin.prototype.readAirStatus = function(ip,port,areaNo,deviceNo,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "readAirStatus", [ip,port,areaNo,deviceNo]);
+};
+
+//防区状态读取
+JmaxAppPlugin.prototype.readDefenceStatus = function(ip,port,areaNo,deviceNo,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "readDefenceStatus", [ip,port,areaNo,deviceNo]);
+};
+
+//开关（电器）控制
+JmaxAppPlugin.prototype.controlSwitch = function(ip,port,areaNo,deviceNo,actionType,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "controlSwitch", [ip,port,areaNo,deviceNo,actionType]);
+};
+
+//开关（电器）状态读取
+JmaxAppPlugin.prototype.readSwitchStatus = function(ip,port,areaNo,deviceNo,type,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "readSwitchStatus", [ip,port,areaNo,deviceNo,type]);
+};
+
+//红外设备控制：电视/机顶盒/红外空调
+JmaxAppPlugin.prototype.controlInfrared = function(ip,port,areaNo,deviceNo,actionType,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "controlInfrared", [ip,port,areaNo,deviceNo,actionType]);
+};
+
+//门锁控制
+JmaxAppPlugin.prototype.controlDoorLock = function(ip,port,areaNo,deviceNo,actionType,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "controlDoorLock", [ip,port,areaNo,deviceNo,actionType]);
+};
+
+//门锁状态读取
+JmaxAppPlugin.prototype.readDoorLock = function(ip,port,areaNo,deviceNo,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "readDoorLock", [ip,port,areaNo,deviceNo]);
+};
+
+//对码控制
+JmaxAppPlugin.prototype.checkControl = function(ip,port,startCheck,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "checkControl", [ip,port,startCheck]);
+};
+
+//清除配置
+JmaxAppPlugin.prototype.clearConfig = function(ip,port,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "clearConfig", [ip,port]);
+};
+
+
+//场景配置
+JmaxAppPlugin.prototype.sceneConfig = function(ip,port,areaNo,deviceNo,deviceType,sceneNo,actionType,airMode,airSpeed,airTemp,airAction,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "sceneConfig", [ip,port,areaNo,deviceNo,deviceType,sceneNo,actionType,airMode,airSpeed,airTemp,airAction]);
+};
+
+//网关测试
+JmaxAppPlugin.prototype.networkTest = function(ip,port,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "networkTest", [ip,port]);
+};
+
+//定时配置
+JmaxAppPlugin.prototype.timeTask = function(ip,port,mode,areaNo,deviceNo,date,week,deviceType,actionType,airMode,airSpeed,airTemp,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "timeTask", [ip,port,mode,areaNo,deviceNo,date,week,deviceType,actionType,airMode,airSpeed,airTemp]);
+};
+
+//设置设备SN码
+JmaxAppPlugin.prototype.setSn = function(ip,port,proNo,buildNo,unitNo,houseNo,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "setSn", [ip,port,proNo,buildNo,unitNo,houseNo]);
+};
+
+//设置网络参数
+JmaxAppPlugin.prototype.setNetConfig = function(ip,port,localAddress,localPort,netWork,gateway,webAddress,webPort,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "setNetConfig", [ip,port,localAddress,localPort,netWork,gateway,webAddress,webPort]);
+};
+//读取设置网络参数
+JmaxAppPlugin.prototype.readNetConfig = function(ip,port,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "readNetConfig", [ip,port]);
+};
+//自动广播扫描
+JmaxAppPlugin.prototype.scanSearchNetConfig = function(callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "scanSearchNetConfig", []);
+};
+//设置设备绑定表
+JmaxAppPlugin.prototype.setDeviceBand = function(ip,port,areaNo,deviceNo,deviceType,iconNo,bandAddress,bandChannel,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "setDeviceBand", [ip,port,areaNo,deviceNo,deviceType,iconNo,bandAddress,bandChannel]);
+};
+//读取设备绑定表
+JmaxAppPlugin.prototype.readDeviceBand = function(ip,port,areaNo,deviceNo,deviceType,iconNo,bandAddress,bandChannel,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "readDeviceBand", [ip,port,areaNo,deviceNo,deviceType,iconNo,bandAddress,bandChannel]);
+};
+//开始设备绑定
+JmaxAppPlugin.prototype.startDeviceBand = function(ip,port,areaNo,deviceNo,deviceType,iconNo,bandAddress,bandChannel,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "startDeviceBand", [ip,port,areaNo,deviceNo,deviceType,iconNo,bandAddress,bandChannel]);
+};
+//测试设备绑定是否成功
+JmaxAppPlugin.prototype.testDeviceBand = function(ip,port,areaNo,deviceNo,deviceType,iconNo,bandAddress,bandChannel,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "testDeviceBand", [ip,port,areaNo,deviceNo,deviceType,iconNo,bandAddress,bandChannel]);
+};
+//读取设备
+JmaxAppPlugin.prototype.readDeviceInfo = function(ip,port,no,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "readDeviceInfo", [ip,port,no]);
+};
+//删除设备
+JmaxAppPlugin.prototype.deleteDeviceInfo = function(ip,port,no,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "deleteDeviceInfo", [ip,port,no]);
+};
+
+//读取模块软件版本
+JmaxAppPlugin.prototype.readModuleSoft = function(ip,port,address,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "readModuleSoft", [ip,port,address]);
+};
+//重启设备
+JmaxAppPlugin.prototype.reboot = function(ip,port,address,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "reboot", [ip,port,address]);
+};
+
 module.exports = new JmaxAppPlugin();

@@ -39,5 +39,6 @@
 		<source-file src="src/android/com/jmax/plugins/JmaxAppPlugin.java" target-dir="src/com/jmax/plugins/" />
 		<!-- 指定第三方jar编译后映射的路径-->
 		<source-file src="src/android/DnkSmartCommunication-1.0.0.jar" target-dir="libs" />
+		<source-file src="src/android/gson-1.6.jar" target-dir="libs" />
 	</platform>
 </plugin>
