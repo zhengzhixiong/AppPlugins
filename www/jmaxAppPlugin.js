@@ -236,21 +236,22 @@ JmaxAppPlugin.prototype.readDeviceBand = function(ip,port,areaNo,deviceNo,device
 		 }
 	 }, null, "JmaxAppPlugin", "readDeviceBand", [ip,port,areaNo,deviceNo,deviceType,iconNo,bandAddress,bandChannel]);
 };
-//开始设备绑定
-JmaxAppPlugin.prototype.startDeviceBand = function(ip,port,areaNo,deviceNo,deviceType,iconNo,bandAddress,bandChannel,callback) {
+//开始设备绑定 (里面包含对码和控制)  deviceType 设备类型 （0：灯光；1：窗帘；2：开关；4：中央空调；5：门锁） actionType：0关，1开
+JmaxAppPlugin.prototype.startDeviceBand = function(ip,port,areaNo,deviceNo,deviceType,actionType,callback) {
 	exec(function(rs){ 
 		 if(callback) {
 			 callback(rs);
 		 }
-	 }, null, "JmaxAppPlugin", "startDeviceBand", [ip,port,areaNo,deviceNo,deviceType,iconNo,bandAddress,bandChannel]);
+	 }, null, "JmaxAppPlugin", "startDeviceBand", [ip,port,areaNo,deviceNo,deviceType]);
 };
-//测试设备绑定是否成功
-JmaxAppPlugin.prototype.testDeviceBand = function(ip,port,areaNo,deviceNo,deviceType,iconNo,bandAddress,bandChannel,callback) {
+//App测试设备绑定是否成功 deviceType 设备类型 （0：灯光；1：窗帘；2：开关；3：红外设备；4：中央空调；5：门锁） 
+//actionType(非红外设备：0关，1开，红外设备，就对应图标序号);
+JmaxAppPlugin.prototype.testDeviceBand = function(ip,port,areaNo,deviceNo,deviceType,actionType,callback) {
 	exec(function(rs){ 
 		 if(callback) {
 			 callback(rs);
 		 }
-	 }, null, "JmaxAppPlugin", "testDeviceBand", [ip,port,areaNo,deviceNo,deviceType,iconNo,bandAddress,bandChannel]);
+	 }, null, "JmaxAppPlugin", "testDeviceBand", [ip,port,areaNo,deviceNo,deviceType,actionType]);
 };
 //读取设备
 JmaxAppPlugin.prototype.readDeviceInfo = function(ip,port,no,callback) {
