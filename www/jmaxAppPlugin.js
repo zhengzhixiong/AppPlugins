@@ -34,118 +34,118 @@ JmaxAppPlugin.prototype.controlScene = function(ip,port,sceneNo,callback) {
 	 }, null, "JmaxAppPlugin", "controlScene", [ip,port,sceneNo]);
 };
 //灯光控制
-JmaxAppPlugin.prototype.controlLight = function(ip,port,areaNo,deviceNo,actionType,callback) {
+JmaxAppPlugin.prototype.controlLight = function(ip,port,areaNo,deviceNo,actionType,jsonObj,callback) {
 	exec(function(rs){ 
 		 if(callback) {
-			 callback(rs);
+			 callback(rs,jsonObj);
 		 }
 	 }, null, "JmaxAppPlugin", "controlLight", [ip,port,areaNo,deviceNo,actionType]);
 };
 
 //灯光状态读取
-JmaxAppPlugin.prototype.readLightStatus = function(ip,port,areaNo,deviceNo,callback) {
+JmaxAppPlugin.prototype.readLightStatus = function(ip,port,areaNo,deviceNo,jsonObj,callback) {
 	exec(function(rs){ 
 		 if(callback) {
-			 callback(rs);
+			 callback(rs,jsonObj);
 		 }
 	 }, null, "JmaxAppPlugin", "readLightStatus", [ip,port,areaNo,deviceNo]);
 };
 
 //窗帘控制
-JmaxAppPlugin.prototype.controlCurtain = function(ip,port,areaNo,deviceNo,actionType,callback) {
+JmaxAppPlugin.prototype.controlCurtain = function(ip,port,areaNo,deviceNo,actionType,jsonObj,callback) {
 	exec(function(rs){ 
 		 if(callback) {
-			 callback(rs);
+			 callback(rs,jsonObj);
 		 }
 	 }, null, "JmaxAppPlugin", "controlCurtain", [ip,port,areaNo,deviceNo,actionType]);
 };
 
 //窗帘状态读取
-JmaxAppPlugin.prototype.readCurtainStatus = function(ip,port,areaNo,deviceNo,callback) {
+JmaxAppPlugin.prototype.readCurtainStatus = function(ip,port,areaNo,deviceNo,jsonObj,callback) {
 	exec(function(rs){ 
 		 if(callback) {
-			 callback(rs);
+			 callback(rs,jsonObj);
 		 }
 	 }, null, "JmaxAppPlugin", "readCurtainStatus", [ip,port,areaNo,deviceNo]);
 };
 
 //中央空调控制
-JmaxAppPlugin.prototype.controlAir = function(ip,port,areaNo,deviceNo,mode,speed,temp,action,callback) {
+JmaxAppPlugin.prototype.controlAir = function(ip,port,areaNo,deviceNo,mode,speed,temp,action,jsonObj,callback) {
 	exec(function(rs){ 
 		 if(callback) {
-			 callback(rs);
+			 callback(rs,jsonObj);
 		 }
 	 }, null, "JmaxAppPlugin", "controlAir", [ip,port,areaNo,deviceNo,mode,speed,temp,action]);
 };
 
 //中央空调状态读取
-JmaxAppPlugin.prototype.readAirStatus = function(ip,port,areaNo,deviceNo,callback) {
+JmaxAppPlugin.prototype.readAirStatus = function(ip,port,areaNo,deviceNo,jsonObj,callback) {
 	exec(function(rs){ 
 		 if(callback) {
-			 callback(rs);
+			 callback(rs,jsonObj);
 		 }
 	 }, null, "JmaxAppPlugin", "readAirStatus", [ip,port,areaNo,deviceNo]);
 };
 
 //防区状态读取
-JmaxAppPlugin.prototype.readDefenceStatus = function(ip,port,areaNo,deviceNo,callback) {
+JmaxAppPlugin.prototype.readDefenceStatus = function(ip,port,areaNo,deviceNo,jsonObj,callback) {
 	exec(function(rs){ 
 		 if(callback) {
-			 callback(rs);
+			 callback(rs,jsonObj);
 		 }
 	 }, null, "JmaxAppPlugin", "readDefenceStatus", [ip,port,areaNo,deviceNo]);
 };
 
 //开关（电器）控制
-JmaxAppPlugin.prototype.controlSwitch = function(ip,port,areaNo,deviceNo,actionType,callback) {
+JmaxAppPlugin.prototype.controlSwitch = function(ip,port,areaNo,deviceNo,actionType,jsonObj,callback) {
 	exec(function(rs){ 
 		 if(callback) {
-			 callback(rs);
+			 callback(rs,jsonObj);
 		 }
 	 }, null, "JmaxAppPlugin", "controlSwitch", [ip,port,areaNo,deviceNo,actionType]);
 };
 
 //开关（电器）状态读取
-JmaxAppPlugin.prototype.readSwitchStatus = function(ip,port,areaNo,deviceNo,type,callback) {
+JmaxAppPlugin.prototype.readSwitchStatus = function(ip,port,areaNo,deviceNo,type,jsonObj,callback) {
 	exec(function(rs){ 
 		 if(callback) {
-			 callback(rs);
+			 callback(rs,jsonObj);
 		 }
 	 }, null, "JmaxAppPlugin", "readSwitchStatus", [ip,port,areaNo,deviceNo,type]);
 };
 
 //红外设备控制：电视/机顶盒/红外空调
-JmaxAppPlugin.prototype.controlInfrared = function(ip,port,areaNo,deviceNo,actionType,callback) {
+JmaxAppPlugin.prototype.controlInfrared = function(ip,port,areaNo,deviceNo,actionType,jsonObj,callback) {
 	exec(function(rs){ 
 		 if(callback) {
-			 callback(rs);
+			 callback(rs,jsonObj);
 		 }
 	 }, null, "JmaxAppPlugin", "controlInfrared", [ip,port,areaNo,deviceNo,actionType]);
 };
 
 //门锁控制
-JmaxAppPlugin.prototype.controlDoorLock = function(ip,port,areaNo,deviceNo,actionType,callback) {
+JmaxAppPlugin.prototype.controlDoorLock = function(ip,port,areaNo,deviceNo,actionType,jsonObj,callback) {
 	exec(function(rs){ 
 		 if(callback) {
-			 callback(rs);
+			 callback(rs,jsonObj);
 		 }
 	 }, null, "JmaxAppPlugin", "controlDoorLock", [ip,port,areaNo,deviceNo,actionType]);
 };
 
 //门锁状态读取
-JmaxAppPlugin.prototype.readDoorLock = function(ip,port,areaNo,deviceNo,callback) {
+JmaxAppPlugin.prototype.readDoorLock = function(ip,port,areaNo,deviceNo,jsonObj,callback) {
 	exec(function(rs){ 
 		 if(callback) {
-			 callback(rs);
+			 callback(rs,jsonObj);
 		 }
 	 }, null, "JmaxAppPlugin", "readDoorLock", [ip,port,areaNo,deviceNo]);
 };
 
 //对码控制
-JmaxAppPlugin.prototype.checkControl = function(ip,port,startCheck,callback) {
+JmaxAppPlugin.prototype.checkControl = function(ip,port,startCheck,jsonObj,callback) {
 	exec(function(rs){ 
 		 if(callback) {
-			 callback(rs);
+			 callback(rs,jsonObj);
 		 }
 	 }, null, "JmaxAppPlugin", "checkControl", [ip,port,startCheck]);
 };
@@ -242,7 +242,7 @@ JmaxAppPlugin.prototype.startDeviceBand = function(ip,port,areaNo,deviceNo,devic
 		 if(callback) {
 			 callback(rs);
 		 }
-	 }, null, "JmaxAppPlugin", "startDeviceBand", [ip,port,areaNo,deviceNo,deviceType]);
+	 }, null, "JmaxAppPlugin", "startDeviceBand", [ip,port,areaNo,deviceNo,deviceType,actionType]);
 };
 //App测试设备绑定是否成功 deviceType 设备类型 （0：灯光；1：窗帘；2：开关；3：红外设备；4：中央空调；5：门锁） 
 //actionType(非红外设备：0关，1开，红外设备，就对应图标序号);
