@@ -177,6 +177,15 @@ JmaxAppPlugin.prototype.sceneConfig = function(ip,port,areaNo,deviceNo,deviceTyp
 	 }, null, "JmaxAppPlugin", "sceneConfig", [ip,port,areaNo,deviceNo,deviceType,sceneNo,actionType,airMode,airSpeed,airTemp,airAction]);
 };
 
+//场景集合配置
+JmaxAppPlugin.prototype.sceneListConfig = function(ip,port,data,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "sceneListConfig", [ip,port,data]);
+};
+
 //网关测试
 JmaxAppPlugin.prototype.networkTest = function(ip,port,callback) {
 	exec(function(rs){ 

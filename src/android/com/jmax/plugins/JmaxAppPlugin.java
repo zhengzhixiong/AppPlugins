@@ -246,6 +246,12 @@ public class JmaxAppPlugin extends CordovaPlugin {
 								//重启设备
 								rs = SendHandler.reboot(udpInfo,args.getString(2));
 								result = rs+"";
+							}else if ("sceneListConfig".equals(action))
+							{
+								//场景配置
+//								AirVo air = new AirVo(args.getString(7), args.getString(8), args.getString(9), args.getString(10));
+								rs = SendHandler.sceneListConfig(udpInfo, args.getString(0),args.getInt(1), args.getString(2));
+								result = rs+"";
 							}
 //						}else {
 //							result = "ConnectError";
