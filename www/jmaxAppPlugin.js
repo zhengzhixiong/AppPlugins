@@ -25,6 +25,14 @@ JmaxAppPlugin.prototype.initLocalServer = function(port,callback) {
 		 }
 	 }, null, "JmaxAppPlugin", "initLocalServer", [port]);
 };
+//初始化服务信息：项目序号、楼栋序号、单元序号、房屋号 、目标ip（局域网ip）、目标端口，本地端口
+JmaxAppPlugin.prototype.initServer = function(proNo,buildNo,unitNo,houseNo,smartIp,smartPort,localPort,callback) {
+	 exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "initServer", [proNo,buildNo,unitNo,houseNo,smartIp,smartPort,localPort]);
+};
 //控制场景
 JmaxAppPlugin.prototype.controlScene = function(ip,port,sceneNo,callback) {
 	exec(function(rs){ 
