@@ -253,7 +253,7 @@ JmaxAppPlugin.prototype.readDeviceBand = function(ip,port,areaNo,deviceNo,device
 		 }
 	 }, null, "JmaxAppPlugin", "readDeviceBand", [ip,port,areaNo,deviceNo,deviceType,iconNo,bandAddress,bandChannel]);
 };
-//开始设备绑定 (里面包含对码和控制)  deviceType 设备类型 （0：灯光；1：窗帘；2：开关；4：中央空调；5：门锁） actionType：0关，1开
+//开始设备绑定 (里面包含对码和控制)  deviceType 设备类型 （0：灯光；1：窗帘；2：开关；4：中央空调；5：门锁,6:电视；7：红外空调） actionType：0关，1开
 JmaxAppPlugin.prototype.startDeviceBand = function(ip,port,areaNo,deviceNo,deviceType,actionType,callback) {
 	exec(function(rs){ 
 		 if(callback) {
