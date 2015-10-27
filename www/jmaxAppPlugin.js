@@ -303,5 +303,14 @@ JmaxAppPlugin.prototype.reboot = function(ip,port,address,callback) {
 		 }
 	 }, null, "JmaxAppPlugin", "reboot", [ip,port,address]);
 };
+//读取设备状态集合
+//设备类型,区域id,设备id,读取类型;设备类型,区域id,设备id,读取类型;   其中读取类型是由于有些电器是读取开关传1，有些事读取电量传17，数据格式必须都要传
+JmaxAppPlugin.prototype.readDeviceInfos = function(ip,port,data,callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "readDeviceInfos", [ip,port,data]);
+};
 
 module.exports = new JmaxAppPlugin();
