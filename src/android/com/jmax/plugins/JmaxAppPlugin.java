@@ -78,7 +78,12 @@ public class JmaxAppPlugin extends CordovaPlugin {
 			}else {
 				callbackContext.success(init+"");
 			}
-		} else {
+		} else if (action.equals("exitApp"))
+		{
+        	cordova.getActivity().finish();
+            System.exit(0);
+			return true;
+		}else {
 			new Thread() {
 				@Override
 				public void run() {

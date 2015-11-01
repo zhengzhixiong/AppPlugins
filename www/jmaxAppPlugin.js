@@ -312,5 +312,9 @@ JmaxAppPlugin.prototype.readDeviceInfos = function(ip,port,data,callback) {
 		 }
 	 }, null, "JmaxAppPlugin", "readDeviceInfos", [ip,port,data]);
 };
+//退出app
+JmaxAppPlugin.prototype.exitApp = function() {
+	exec(null, null, "JmaxAppPlugin", "exitApp", []);
+};
 
 module.exports = new JmaxAppPlugin();
