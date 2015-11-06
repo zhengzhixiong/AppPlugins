@@ -70,7 +70,7 @@ public class JmaxAppPlugin extends CordovaPlugin {
 		} else if ("initServer".equals(action)) {
 			//项目序号、楼栋序号、单元序号、房屋号 、目标ip、目标端口，本地端口
 			//初始化本地socket
-	        boolean init = UdpServer.initUdpServer(args.getString(6),true);
+	        boolean init = UdpServer.initUdpServer(args.getString(6),false);
 	        //创建局域网的智能网关信息
 	        UdpInfo ui = ProcotolUtils.createOnlyUdpInfo(args.getInt(0), args.getInt(1), args.getInt(2), args.getInt(3), args.getString(4), args.getInt(5));
 	        if (init==true) {
