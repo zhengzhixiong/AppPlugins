@@ -203,7 +203,12 @@ public class JmaxAppPlugin extends CordovaPlugin {
 							{
 								//读取网络参数
 								NetConfig netConfig = SendHandler.readNetConfig(udpInfo);
-								result = new Gson().toJson(netConfig);
+								if (netConfig==null) {
+									result = "";
+								}else {
+									result = new Gson().toJson(netConfig);
+								}
+								
 							}else if ("scanSearchNetConfig".equals(action))
 							{
 								//自动广播扫描
