@@ -47,4 +47,20 @@
 		<source-file src="src/android/android-logging-log4j-1.0.3.jar" target-dir="libs" />
 		<source-file src="src/android/log4j-1.2.17.jar" target-dir="libs" />
 	</platform>
+	
+	 <!-- ios -->
+	  <platform name="ios">
+	
+	    <config-file target="config.xml" parent="/*">
+	      <feature name="JmaxAppPlugin">
+	        <param name="ios-package" value="JmaxAppPlugin"/>
+	      </feature>
+	    </config-file>
+	
+	    <header-file src="src/ios/JmaxAppPlugin.h"/>
+	    <source-file src="src/ios/JmaxAppPlugin.m"/>
+	
+	    <framework src="QuartzCore.framework" />
+	  </platform>
+	
 </plugin>
