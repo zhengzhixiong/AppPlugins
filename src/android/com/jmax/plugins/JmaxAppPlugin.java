@@ -16,6 +16,7 @@ package com.jmax.plugins;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -46,6 +47,7 @@ import com.google.gson.Gson;
  * @see
  */
 public class JmaxAppPlugin extends CordovaPlugin {
+	Logger logger = Logger.getLogger(JmaxAppPlugin.class);
 	private CallbackContext callbackContext;
 	Handler handler = new Handler() {
 		@Override
@@ -70,7 +72,13 @@ public class JmaxAppPlugin extends CordovaPlugin {
 		} else if ("initServer".equals(action)) {
 			//项目序号、楼栋序号、单元序号、房屋号 、目标ip、目标端口，本地端口
 			//初始化本地socket
-	        boolean init = UdpServer.initUdpServer(args.getString(6),false);
+	        boolean init = false;
+	        try {
+	        	 init = UdpServer.initUdpServer(args.getString(6),false);
+			} catch (Exception e) {
+				logger.error("app初始化本地端口错误",e);
+			}
+	       
 	        //创建局域网的智能网关信息
 	        UdpInfo ui = ProcotolUtils.createOnlyUdpInfo(args.getInt(0), args.getInt(1), args.getInt(2), args.getInt(3), args.getString(4), args.getInt(5));
 	        if (init==true) {
