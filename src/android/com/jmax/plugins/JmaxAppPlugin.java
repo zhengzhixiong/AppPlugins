@@ -241,11 +241,11 @@ public class JmaxAppPlugin extends CordovaPlugin {
 							result = rs + "";
 						} else if ("setNetConfig".equals(action)) {
 							// 设置网络参数
-							NetConfig netConfig = new NetConfig(
-									args.getString(2), Integer.valueOf(args
-											.getString(3)), args.getString(4),
-									args.getString(5), args.getString(6),
-									Integer.valueOf(args.getString(7)));
+							NetConfig netConfig = new NetConfig(args.getInt(0),args.getInt(1),args.getInt(2),args.getInt(3),
+									args.getString(4), Integer.valueOf(args
+											.getString(5)), args.getString(6),
+									args.getString(7), args.getString(8),
+									Integer.valueOf(args.getString(9)));
 							rs = SendHandler.setNetConfig(udpInfo, netConfig);
 							result = rs + "";
 						} else if ("readNetConfig".equals(action)) {

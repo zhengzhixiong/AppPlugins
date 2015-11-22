@@ -213,13 +213,13 @@ JmaxAppPlugin.prototype.setSn = function(ip,port,proNo,buildNo,unitNo,houseNo,ca
 	 }, null, "JmaxAppPlugin", "setSn", [ip,port,proNo,buildNo,unitNo,houseNo]);
 };
 
-//设置网络参数
-JmaxAppPlugin.prototype.setNetConfig = function(ip,port,localAddress,localPort,netWork,gateway,webAddress,webPort,callback) {
+//设置网络参数 有需要变更的是localAddress、network、gateway,其它的自动回带服务端反馈的
+JmaxAppPlugin.prototype.setNetConfig = function(proNo,buildNo,unitNo,houseNo,localAddress,localPort,netWork,gateway,webAddress,webPort,callback) {
 	exec(function(rs){ 
 		 if(callback) {
 			 callback(rs);
 		 }
-	 }, null, "JmaxAppPlugin", "setNetConfig", [ip,port,localAddress,localPort,netWork,gateway,webAddress,webPort]);
+	 }, null, "JmaxAppPlugin", "setNetConfig", [proNo,buildNo,unitNo,houseNo,localAddress,localPort,netWork,gateway,webAddress,webPort]);
 };
 //读取设置网络参数
 JmaxAppPlugin.prototype.readNetConfig = function(ip,port,callback) {
