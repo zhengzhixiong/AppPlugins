@@ -316,5 +316,12 @@ JmaxAppPlugin.prototype.readDeviceInfos = function(ip,port,data,callback) {
 JmaxAppPlugin.prototype.exitApp = function() {
 	exec(null, null, "JmaxAppPlugin", "exitApp", []);
 };
-
+//读取本地wifi  ip地址，为""或"0.0.0.0" 表示读取不到的意思
+JmaxAppPlugin.prototype.getLocalAddr = function(callback) {
+	exec(function(rs){ 
+		 if(callback) {
+			 callback(rs);
+		 }
+	 }, null, "JmaxAppPlugin", "getLocalAddr", []);
+};
 module.exports = new JmaxAppPlugin();

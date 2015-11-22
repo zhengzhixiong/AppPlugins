@@ -14,12 +14,17 @@
  */
 package com.jmax.plugins;
 
+import java.net.SocketException;
+
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import android.content.Context;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -59,7 +64,8 @@ public class JmaxAppPlugin extends CordovaPlugin {
 			callbackContext.success(val);
 		}
 	};
-//	private UdpInfo udpInfo;
+
+	// private UdpInfo udpInfo;
 
 	public boolean execute(final String action, final JSONArray args,
 			CallbackContext callbackContext) throws JSONException {
@@ -70,24 +76,28 @@ public class JmaxAppPlugin extends CordovaPlugin {
 		} else if ("test".equals(action)) {
 			callbackContext.success("调用---" + args.getString(0));
 		} else if ("initServer".equals(action)) {
-			//项目序号、楼栋序号、单元序号、房屋号 、目标ip、目标端口，本地端口
-			//初始化本地socket
+			// 项目序号、楼栋序号、单元序号、房屋号 、目标ip、目标端口，本地端口
+			// 初始化本地socket
 			if (!init) {
-				init = UdpServer.initUdpServer(args.getString(6),false);
+				init = UdpServer.initUdpServer(args.getString(6), false);
 			}
-	        //创建局域网的智能网关信息
-	        UdpInfo ui = ProcotolUtils.createOnlyUdpInfo(args.getInt(0), args.getInt(1), args.getInt(2), args.getInt(3), args.getString(4), args.getInt(5));
-	        if (init==true) {
-				callbackContext.success((ui!=null)+"");
-			}else {
-				callbackContext.success(init+"");
+			// 创建局域网的智能网关信息
+			UdpInfo ui = ProcotolUtils.createOnlyUdpInfo(args.getInt(0),
+					args.getInt(1), args.getInt(2), args.getInt(3),
+					args.getString(4), args.getInt(5));
+			if (init == true) {
+				callbackContext.success((ui != null) + "");
+			} else {
+				callbackContext.success(init + "");
 			}
-		} else if (action.equals("exitApp"))
-		{
-        	cordova.getActivity().finish();
-            System.exit(0);
+		} else if (action.equals("exitApp")) {
+			cordova.getActivity().finish();
+			System.exit(0);
 			return true;
-		}else {
+		} else if (action.equals("getLocalAddr")) {
+			String localAddr = getLocalIPAddress();
+			callbackContext.success(localAddr);
+		} else {
 			new Thread() {
 				@Override
 				public void run() {
@@ -95,192 +105,239 @@ public class JmaxAppPlugin extends CordovaPlugin {
 						boolean rs = false;
 						String result = "";
 						UdpInfo udpInfo = ProcotolUtils.currentUdpInfo;
-//						boolean testLink = SendHandler.networkTest(udpInfo);
-//						if (testLink) {
-							if ("controlScene".equals(action))
-							{
-								//控制场景
-								rs = SendHandler.controlScene(udpInfo,Integer.valueOf(args.getString(2)));
-								result = rs+"";
-							}else if ("controlLight".equals(action))
-							{
-								//控制灯光
-								Log.i("mylog", "ip-->" + udpInfo.getIp());
-								rs = SendHandler.controlLight(udpInfo,Integer.valueOf(args.getString(2)),Integer.valueOf(args.getString(3)),Integer.valueOf(args.getString(4)));
-								result = rs+"";
-							}else if ("readLightStatus".equals(action))
-							{
-								//灯光状态读取
-								int b = SendHandler.readLightStatus(udpInfo,Integer.valueOf(args.getString(2)),Integer.valueOf(args.getString(3)));
-								result = b+"";
-							}else if ("controlCurtain".equals(action))
-							{
-								//控制窗帘
-								rs = SendHandler.controlCurtain(udpInfo,Integer.valueOf(args.getString(2)),Integer.valueOf(args.getString(3)),Integer.valueOf(args.getString(4)));
-								result = rs+"";
-							}else if ("readCurtainStatus".equals(action))
-							{
-								//窗帘状态读取
-								int b = SendHandler.readCurtainStatus(udpInfo,Integer.valueOf(args.getString(2)),Integer.valueOf(args.getString(3)));
-								result = b+"";
-							}else if ("controlAir".equals(action))
-							{
-								//控制中央空调
-								AirVo air = new AirVo(args.getString(4), args.getString(5), args.getString(6), args.getString(7));
-								rs = SendHandler.controlAir(udpInfo, Integer.valueOf(args.getString(2)),Integer.valueOf(args.getString(3)), air);
-								result = rs+"";
-							}else if ("readAirStatus".equals(action))
-							{
-								//中央空调状态读取
-								AirVo air = SendHandler.readAirStatus(udpInfo,Integer.valueOf(args.getString(2)),Integer.valueOf(args.getString(3)));
-								result = new Gson().toJson(air);
-							}else if ("readDefenceStatus".equals(action))
-							{
-								//防区状态读取
-								int b = SendHandler.readDefenceStatus(udpInfo);
-								result = b+"";
-							}else if ("controlSwitch".equals(action))
-							{
-								//开关（电器）控制
-								rs = SendHandler.controlSwitch(udpInfo,Integer.valueOf(args.getString(2)),Integer.valueOf(args.getString(3)),Integer.valueOf(args.getString(4)));
-								result = rs+"";
-							}else if ("readSwitchStatus".equals(action))
-							{
-								//开关（电器）状态读取
-								WiringVo wiringVo = SendHandler.readSwitchStatus(udpInfo,Integer.valueOf(args.getString(2)),Integer.valueOf(args.getString(3)),Integer.valueOf(args.getString(4)));
-								result = new Gson().toJson(wiringVo);;
-							}else if ("controlInfrared".equals(action))
-							{
-								//红外设备控制：电视/机顶盒/红外空调
-								rs = SendHandler.controlInfrared(udpInfo,Integer.valueOf(args.getString(2)),Integer.valueOf(args.getString(3)),Integer.valueOf(args.getString(4)));
-								result = rs+"";
-							}else if ("controlDoorLock".equals(action))
-							{
-								//门锁控制
-								rs = SendHandler.controlDoorLock(udpInfo,Integer.valueOf(args.getString(2)),Integer.valueOf(args.getString(3)),Integer.valueOf(args.getString(4)));
-								result = rs+"";
-							}else if ("readDoorLock".equals(action))
-							{
-								//门锁状态读取
-								int b = SendHandler.readDoorLock(udpInfo,Integer.valueOf(args.getString(2)),Integer.valueOf(args.getString(3)));
-								result = b+"";
-							}else if ("checkControl".equals(action))
-							{
-								//对码控制
-								rs = SendHandler.checkControl(udpInfo,Integer.valueOf(args.getString(2)));
-								result = rs+"";
-							}else if ("clearConfig".equals(action))
-							{
-								//清除配置
-								rs = SendHandler.clearConfig(udpInfo);
-								result = rs+"";
-							}else if ("sceneConfig".equals(action))
-							{
-								//场景配置
-								AirVo air = new AirVo(args.getString(7), args.getString(8), args.getString(9), args.getString(10));
-								rs = SendHandler.sceneConfig(udpInfo, Integer.valueOf(args.getString(2)),Integer.valueOf(args.getString(3)), Integer.valueOf(args.getString(4)), Integer.valueOf(args.getString(5)), Integer.valueOf(args.getString(6)), air);
-								result = rs+"";
-							}else if ("networkTest".equals(action))
-							{
-								//网关测试
-//								UdpInfo tempUdpInfo = new UdpInfo(args.getString(0), args.getString(1));
-								rs = SendHandler.networkTest(udpInfo);
-								result = rs+"";
-							}else if ("timeTask".equals(action))
-							{
-								//定时配置
-								Task task = new Task(args.getString(2), args.getString(3), args.getString(4), args.getString(5), args.getString(6), args.getString(7), args.getString(8), args.getString(9), args.getString(10), args.getString(11));
-								rs = SendHandler.timeTask(udpInfo, task);
-								result = rs+"";
-							}else if ("setSn".equals(action))
-							{
-								//设置设备SN码
-								rs = SendHandler.setSn(udpInfo, Integer.valueOf(args.getString(2)), Integer.valueOf(args.getString(3)), Integer.valueOf(args.getString(4)), Integer.valueOf(args.getString(5)));
-								result = rs+"";
-							}else if ("setNetConfig".equals(action))
-							{
-								//设置网络参数
-								NetConfig netConfig = new NetConfig(args.getString(2), Integer.valueOf(args.getString(3)), args.getString(4), args.getString(5), args.getString(6), Integer.valueOf(args.getString(7)));
-								rs = SendHandler.setNetConfig(udpInfo, netConfig);
-								result = rs+"";
-							}else if ("readNetConfig".equals(action))
-							{
-								//读取网络参数
-								NetConfig netConfig = SendHandler.readNetConfig(udpInfo);
-								if (netConfig==null) {
-									result = "";
-								}else {
-									result = new Gson().toJson(netConfig);
-								}
-								
-							}else if ("scanSearchNetConfig".equals(action))
-							{
-								//自动广播扫描
-//								NetConfig netConfig = SendHandler.scanSearchNetConfig();
-//								result = new Gson().toJson(netConfig);
-							}else if ("setDeviceBand".equals(action))
-							{
-								//设置设备绑定表
-								DeviceBand deviceBand = new DeviceBand(args.getString(2), args.getString(3), args.getString(4), args.getString(5), args.getString(6), args.getString(7));
-								rs = SendHandler.setDeviceBand(udpInfo, deviceBand);
-								result = rs+"";
-							}else if ("readDeviceBand".equals(action))
-							{
-								//读取设备绑定
-								DeviceBand deviceBand = new DeviceBand(args.getString(2), args.getString(3), args.getString(4), args.getString(5), args.getString(6), args.getString(7));
-								deviceBand = SendHandler.readDeviceBand(udpInfo, deviceBand);
-								result = new Gson().toJson(deviceBand);
-							}else if ("startDeviceBand".equals(action))
-							{
-								//app开始设备绑定
-								rs = SendHandler.appStartDeviceBand(udpInfo,args.getInt(2), args.getInt(3), args.getInt(4),args.getInt(5));
-								result = rs+"";
-							}else if ("testDeviceBand".equals(action))
-							{
-								//测试设备绑定是否成功
-								rs = SendHandler.appTestDeviceBand(udpInfo,args.getInt(2), args.getInt(3), args.getInt(4),args.getInt(5));
-								result = rs+"";
-							}else if ("readDeviceInfo".equals(action))
-							{
-								//读取设备
-								DeviceInfo deviceInfo = SendHandler.readDeviceInfo(udpInfo, Integer.valueOf(args.getString(2)));
-								result = new Gson().toJson(deviceInfo);;
-							}else if ("deleteDeviceInfo".equals(action))
-							{
-								//删除设备
-								rs = SendHandler.deleteDeviceInfo(udpInfo, Integer.valueOf(args.getString(2)));
-								result = rs+"";
-							}else if ("readModuleSoft".equals(action))
-							{
-								//读取软件版本
-								int b = SendHandler.readModuleSoft(udpInfo, args.getString(2));
-								result = b+"";
-							}else if ("reboot".equals(action))
-							{
-								//重启设备
-								rs = SendHandler.reboot(udpInfo,args.getString(2));
-								result = rs+"";
-							}else if ("sceneListConfig".equals(action))
-							{
-								//场景配置
-//								AirVo air = new AirVo(args.getString(7), args.getString(8), args.getString(9), args.getString(10));
-								rs = SendHandler.sceneListConfig(udpInfo, args.getString(0),args.getInt(1), args.getString(2));
-								result = rs+"";
-							}else if ("readDeviceInfos".equals(action))
-							{
-								//读取设备信息
-								result = SendHandler.readDeviceInfos(udpInfo, args.getString(0), args.getInt(1), args.getString(2));
+						// boolean testLink = SendHandler.networkTest(udpInfo);
+						// if (testLink) {
+						if ("controlScene".equals(action)) {
+							// 控制场景
+							rs = SendHandler.controlScene(udpInfo,
+									Integer.valueOf(args.getString(2)));
+							result = rs + "";
+						} else if ("controlLight".equals(action)) {
+							// 控制灯光
+							Log.i("mylog", "ip-->" + udpInfo.getIp());
+							rs = SendHandler.controlLight(udpInfo,
+									Integer.valueOf(args.getString(2)),
+									Integer.valueOf(args.getString(3)),
+									Integer.valueOf(args.getString(4)));
+							result = rs + "";
+						} else if ("readLightStatus".equals(action)) {
+							// 灯光状态读取
+							int b = SendHandler.readLightStatus(udpInfo,
+									Integer.valueOf(args.getString(2)),
+									Integer.valueOf(args.getString(3)));
+							result = b + "";
+						} else if ("controlCurtain".equals(action)) {
+							// 控制窗帘
+							rs = SendHandler.controlCurtain(udpInfo,
+									Integer.valueOf(args.getString(2)),
+									Integer.valueOf(args.getString(3)),
+									Integer.valueOf(args.getString(4)));
+							result = rs + "";
+						} else if ("readCurtainStatus".equals(action)) {
+							// 窗帘状态读取
+							int b = SendHandler.readCurtainStatus(udpInfo,
+									Integer.valueOf(args.getString(2)),
+									Integer.valueOf(args.getString(3)));
+							result = b + "";
+						} else if ("controlAir".equals(action)) {
+							// 控制中央空调
+							AirVo air = new AirVo(args.getString(4),
+									args.getString(5), args.getString(6),
+									args.getString(7));
+							rs = SendHandler.controlAir(udpInfo,
+									Integer.valueOf(args.getString(2)),
+									Integer.valueOf(args.getString(3)), air);
+							result = rs + "";
+						} else if ("readAirStatus".equals(action)) {
+							// 中央空调状态读取
+							AirVo air = SendHandler.readAirStatus(udpInfo,
+									Integer.valueOf(args.getString(2)),
+									Integer.valueOf(args.getString(3)));
+							result = new Gson().toJson(air);
+						} else if ("readDefenceStatus".equals(action)) {
+							// 防区状态读取
+							int b = SendHandler.readDefenceStatus(udpInfo);
+							result = b + "";
+						} else if ("controlSwitch".equals(action)) {
+							// 开关（电器）控制
+							rs = SendHandler.controlSwitch(udpInfo,
+									Integer.valueOf(args.getString(2)),
+									Integer.valueOf(args.getString(3)),
+									Integer.valueOf(args.getString(4)));
+							result = rs + "";
+						} else if ("readSwitchStatus".equals(action)) {
+							// 开关（电器）状态读取
+							WiringVo wiringVo = SendHandler.readSwitchStatus(
+									udpInfo,
+									Integer.valueOf(args.getString(2)),
+									Integer.valueOf(args.getString(3)),
+									Integer.valueOf(args.getString(4)));
+							result = new Gson().toJson(wiringVo);
+							;
+						} else if ("controlInfrared".equals(action)) {
+							// 红外设备控制：电视/机顶盒/红外空调
+							rs = SendHandler.controlInfrared(udpInfo,
+									Integer.valueOf(args.getString(2)),
+									Integer.valueOf(args.getString(3)),
+									Integer.valueOf(args.getString(4)));
+							result = rs + "";
+						} else if ("controlDoorLock".equals(action)) {
+							// 门锁控制
+							rs = SendHandler.controlDoorLock(udpInfo,
+									Integer.valueOf(args.getString(2)),
+									Integer.valueOf(args.getString(3)),
+									Integer.valueOf(args.getString(4)));
+							result = rs + "";
+						} else if ("readDoorLock".equals(action)) {
+							// 门锁状态读取
+							int b = SendHandler.readDoorLock(udpInfo,
+									Integer.valueOf(args.getString(2)),
+									Integer.valueOf(args.getString(3)));
+							result = b + "";
+						} else if ("checkControl".equals(action)) {
+							// 对码控制
+							rs = SendHandler.checkControl(udpInfo,
+									Integer.valueOf(args.getString(2)));
+							result = rs + "";
+						} else if ("clearConfig".equals(action)) {
+							// 清除配置
+							rs = SendHandler.clearConfig(udpInfo);
+							result = rs + "";
+						} else if ("sceneConfig".equals(action)) {
+							// 场景配置
+							AirVo air = new AirVo(args.getString(7),
+									args.getString(8), args.getString(9),
+									args.getString(10));
+							rs = SendHandler.sceneConfig(udpInfo,
+									Integer.valueOf(args.getString(2)),
+									Integer.valueOf(args.getString(3)),
+									Integer.valueOf(args.getString(4)),
+									Integer.valueOf(args.getString(5)),
+									Integer.valueOf(args.getString(6)), air);
+							result = rs + "";
+						} else if ("networkTest".equals(action)) {
+							// 网关测试
+							// UdpInfo tempUdpInfo = new
+							// UdpInfo(args.getString(0), args.getString(1));
+							rs = SendHandler.networkTest(udpInfo);
+							result = rs + "";
+						} else if ("timeTask".equals(action)) {
+							// 定时配置
+							Task task = new Task(args.getString(2),
+									args.getString(3), args.getString(4),
+									args.getString(5), args.getString(6),
+									args.getString(7), args.getString(8),
+									args.getString(9), args.getString(10),
+									args.getString(11));
+							rs = SendHandler.timeTask(udpInfo, task);
+							result = rs + "";
+						} else if ("setSn".equals(action)) {
+							// 设置设备SN码
+							rs = SendHandler.setSn(udpInfo,
+									Integer.valueOf(args.getString(2)),
+									Integer.valueOf(args.getString(3)),
+									Integer.valueOf(args.getString(4)),
+									Integer.valueOf(args.getString(5)));
+							result = rs + "";
+						} else if ("setNetConfig".equals(action)) {
+							// 设置网络参数
+							NetConfig netConfig = new NetConfig(
+									args.getString(2), Integer.valueOf(args
+											.getString(3)), args.getString(4),
+									args.getString(5), args.getString(6),
+									Integer.valueOf(args.getString(7)));
+							rs = SendHandler.setNetConfig(udpInfo, netConfig);
+							result = rs + "";
+						} else if ("readNetConfig".equals(action)) {
+							// 读取网络参数
+							NetConfig netConfig = SendHandler
+									.readNetConfig(udpInfo);
+							if (netConfig == null) {
+								result = "";
+							} else {
+								result = new Gson().toJson(netConfig);
 							}
-//						}else {
-//							result = "ConnectError";
-//						}
-						
-						//处理结果
+
+						} else if ("scanSearchNetConfig".equals(action)) {
+							// 自动广播扫描
+							// NetConfig netConfig =
+							// SendHandler.scanSearchNetConfig();
+							// result = new Gson().toJson(netConfig);
+						} else if ("setDeviceBand".equals(action)) {
+							// 设置设备绑定表
+							DeviceBand deviceBand = new DeviceBand(
+									args.getString(2), args.getString(3),
+									args.getString(4), args.getString(5),
+									args.getString(6), args.getString(7));
+							rs = SendHandler.setDeviceBand(udpInfo, deviceBand);
+							result = rs + "";
+						} else if ("readDeviceBand".equals(action)) {
+							// 读取设备绑定
+							DeviceBand deviceBand = new DeviceBand(
+									args.getString(2), args.getString(3),
+									args.getString(4), args.getString(5),
+									args.getString(6), args.getString(7));
+							deviceBand = SendHandler.readDeviceBand(udpInfo,
+									deviceBand);
+							result = new Gson().toJson(deviceBand);
+						} else if ("startDeviceBand".equals(action)) {
+							// app开始设备绑定
+							rs = SendHandler.appStartDeviceBand(udpInfo,
+									args.getInt(2), args.getInt(3),
+									args.getInt(4), args.getInt(5));
+							result = rs + "";
+						} else if ("testDeviceBand".equals(action)) {
+							// 测试设备绑定是否成功
+							rs = SendHandler.appTestDeviceBand(udpInfo,
+									args.getInt(2), args.getInt(3),
+									args.getInt(4), args.getInt(5));
+							result = rs + "";
+						} else if ("readDeviceInfo".equals(action)) {
+							// 读取设备
+							DeviceInfo deviceInfo = SendHandler
+									.readDeviceInfo(udpInfo,
+											Integer.valueOf(args.getString(2)));
+							result = new Gson().toJson(deviceInfo);
+							;
+						} else if ("deleteDeviceInfo".equals(action)) {
+							// 删除设备
+							rs = SendHandler.deleteDeviceInfo(udpInfo,
+									Integer.valueOf(args.getString(2)));
+							result = rs + "";
+						} else if ("readModuleSoft".equals(action)) {
+							// 读取软件版本
+							int b = SendHandler.readModuleSoft(udpInfo,
+									args.getString(2));
+							result = b + "";
+						} else if ("reboot".equals(action)) {
+							// 重启设备
+							rs = SendHandler.reboot(udpInfo, args.getString(2));
+							result = rs + "";
+						} else if ("sceneListConfig".equals(action)) {
+							// 场景配置
+							// AirVo air = new AirVo(args.getString(7),
+							// args.getString(8), args.getString(9),
+							// args.getString(10));
+							rs = SendHandler.sceneListConfig(udpInfo,
+									args.getString(0), args.getInt(1),
+									args.getString(2));
+							result = rs + "";
+						} else if ("readDeviceInfos".equals(action)) {
+							// 读取设备信息
+							result = SendHandler.readDeviceInfos(udpInfo,
+									args.getString(0), args.getInt(1),
+									args.getString(2));
+						}
+						// }else {
+						// result = "ConnectError";
+						// }
+
+						// 处理结果
 						Message msg = new Message();
-				        Bundle data = new Bundle();
-				        data.putString("value",result);
-				        msg.setData(data);
-				        handler.sendMessage(msg);
+						Bundle data = new Bundle();
+						data.putString("value", result);
+						msg.setData(data);
+						handler.sendMessage(msg);
 					} catch (JSONException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -309,4 +366,30 @@ public class JmaxAppPlugin extends CordovaPlugin {
 		});
 	}
 
+	
+	//将获取的int转为真正的ip地址,参考的网上的，修改了下  
+	private String intToIp(int ipAddress)  {
+		 return ((ipAddress & 0xff)+"."+(ipAddress>>8 & 0xff)+"."  
+	                +(ipAddress>>16 & 0xff)+"."+(ipAddress>>24 & 0xff));  
+	}  
+	//返回""或0.0.0.0都是失败的意思
+	private String getLocalIPAddress() {
+		try {
+			WifiManager wifimanage=(WifiManager)cordova.getActivity().getSystemService(Context.WIFI_SERVICE);//获取WifiManager  
+			//检查wifi是否开启  
+//			if(!wifimanage.isWifiEnabled())  {  
+//				wifimanage.setWifiEnabled(true);  
+//			}  
+			  
+			WifiInfo wifiinfo= wifimanage.getConnectionInfo();  
+			  
+			String ip=intToIp(wifiinfo.getIpAddress());  
+			  
+			return ip;
+		} catch (Exception ex) {
+			System.err.print("error");
+		}
+		return "";
+
+	}
 }
