@@ -251,7 +251,7 @@ public class JmaxAppPlugin extends CordovaPlugin {
 						} else if ("readNetConfig".equals(action)) {
 							// 读取网络参数
 							NetConfig netConfig = SendHandler
-									.readNetConfig(udpInfo);
+									.readNetConfig(udpInfo,args.getInt(1));
 							if (netConfig == null) {
 								result = "";
 							} else {
