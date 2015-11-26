@@ -246,7 +246,7 @@ public class JmaxAppPlugin extends CordovaPlugin {
 											.getString(5)), args.getString(6),
 									args.getString(7), args.getString(8),
 									Integer.valueOf(args.getString(9)));
-							rs = SendHandler.setNetConfig(udpInfo, netConfig);
+							rs = SendHandler.setNetConfig(udpInfo, netConfig,false);
 							result = rs + "";
 						} else if ("readNetConfig".equals(action)) {
 							// 读取网络参数
@@ -281,7 +281,7 @@ public class JmaxAppPlugin extends CordovaPlugin {
 									deviceBand);
 							result = new Gson().toJson(deviceBand);
 						} else if ("startDeviceBand".equals(action)) {
-							// app开始设备绑定
+							//app开始设备绑定
 							rs = SendHandler.appStartDeviceBand(udpInfo,
 									args.getInt(2), args.getInt(3),
 									args.getInt(4), args.getInt(5));
