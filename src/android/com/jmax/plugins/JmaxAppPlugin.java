@@ -296,7 +296,7 @@ public class JmaxAppPlugin extends CordovaPlugin {
 							// 读取设备
 							DeviceInfo deviceInfo = SendHandler
 									.readDeviceInfo(udpInfo,
-											Integer.valueOf(args.getString(2)));
+											Integer.valueOf(args.getString(2)),200);
 							result = new Gson().toJson(deviceInfo);
 							;
 						} else if ("deleteDeviceInfo".equals(action)) {
