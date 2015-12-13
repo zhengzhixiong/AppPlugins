@@ -59,7 +59,8 @@
 	
 	    <header-file src="src/ios/JmaxAppPlugin.h"/>
 	    <source-file src="src/ios/JmaxAppPlugin.m"/>
-	
+		<header-file src="src/ios/AsyncUdpSocket.h"/>
+	    <source-file src="src/ios/AsyncUdpSocket.m"/>
 	    <framework src="QuartzCore.framework" />
 	  </platform>
 	
