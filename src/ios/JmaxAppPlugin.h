@@ -3,14 +3,14 @@
 #import <CommonCrypto/CommonDigest.h>
 #define FileHashDefaultChunkSizeForReadingData 1024*8 // 8K
 @interface JmaxAppPlugin : CDVPlugin {
-//     NSString *host;
-//     int port;
-//     long tag;
-//     AsyncUdpSocket *udpSocket;
-//
-//     Byte cmdType;
-//     NSData* cmdResult;
-//    CDVInvokedUrlCommand *command;
+    //     NSString *host;
+    //     int port;
+    //     long tag;
+    //     AsyncUdpSocket *udpSocket;
+    //
+    //     Byte cmdType;
+    //     NSData* cmdResult;
+    //    CDVInvokedUrlCommand *command;
 }
 -(void)test:(CDVInvokedUrlCommand*)command;
 
@@ -86,7 +86,8 @@
 -(void) sceneListConfig:(CDVInvokedUrlCommand *)command;
 //读取设备信息
 -(void) readDeviceInfos:(CDVInvokedUrlCommand *)command;
-
+//getLocalAddress
+-(void) getLocalAddr:(CDVInvokedUrlCommand *)command;
 //计算字符串的MD5值，
 +(NSString*)getmd5WithString:(NSString*)string;
 //check byte
