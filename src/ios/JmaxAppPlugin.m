@@ -294,6 +294,35 @@ static NSData *cmdResult;
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }];
 }
+
+-(void) readLightStatus:(int)areaNo secondDeviceNo:(int)deviceNo {
+    Byte bytes[] = {0xAE,0xD0,0x08,0x82,0x01,0x01,0x00,0x00};
+    cmdType = bytes[3];
+    bytes[5] = (Byte)areaNo;
+    bytes[6] = (Byte)deviceNo;
+    [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
+    NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
+    [udpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
+    [self.commandDelegate runInBackground:^{
+        NSString* result = nil;
+        long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
+        NSLog(@"cmdType=%#x",cmdType);
+        while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=timeout) {
+            if (cmdResult!=nil) {
+                Byte *returnByte = (Byte *)[cmdResult bytes];
+                //            NSLog(@"handler type=%#x\n",cmdType);
+                if (cmdType == returnByte[3]) {
+                    result = [NSString stringWithFormat:@"%d",returnByte[13]];;
+                }else {
+                    result = @"-2";
+                }
+            }else {
+                result = @"-2";
+            }
+            
+        }
+    }];
+}
 //窗帘控制
 -(void) controlCurtain:(CDVInvokedUrlCommand *)command {
     Byte bytes[] = {0xAE,0xD0,0x09,0x03,0x01,0x00,0x00,0x01,0x00};
@@ -354,7 +383,29 @@ static NSData *cmdResult;
     [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
     NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
     [udpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
-    [self returnResult:command sendBytes:bytes];
+    Byte actionType = bytes[7];
+    [self.commandDelegate runInBackground:^{
+        NSString* result = nil;
+        long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
+        NSLog(@"cmdType=%#x",cmdType);
+        while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=timeout) {
+            if (cmdResult!=nil) {
+                Byte *returnByte = (Byte *)[cmdResult bytes];
+                if (cmdType == returnByte[3]) {
+                    //zanshi mei you yi yi dui ying
+                    result = actionType==returnByte[13]?@"true":@"false";
+                }else {
+                    result = @"false";
+                }
+            }else {
+                result = @"false";
+            }
+        }
+        cmdResult = nil;
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:result];
+        //    NSLog(@"ok");
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
 }
 //中央空调状态
 -(void) readAirStatus:(CDVInvokedUrlCommand *)command {
@@ -365,7 +416,27 @@ static NSData *cmdResult;
     [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
     NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
     [udpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
-    [self returnResult:command sendBytes:bytes];
+    [self.commandDelegate runInBackground:^{
+        NSString* result = nil;
+        long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
+//        NSLog(@"cmdType=%#x",cmdType);
+        while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=timeout) {
+            if (cmdResult!=nil) {
+                Byte *returnByte = (Byte *)[cmdResult bytes];
+                result = [NSString stringWithFormat:@"{\"mode\":%d,\"speed\":%d,\"temp\":%d,\"action\":%d}",              returnByte[14],
+                          returnByte[15],
+                          returnByte[16],
+                          returnByte[13]
+                          ];
+            }else {
+                result = @"{\"mode\":0,\"speed\":0,\"temp\":0,\"action\":-2}";
+            }
+        }
+        cmdResult = nil;
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:result];
+        //    NSLog(@"ok");
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
 }
 //防区状态读取
 -(void) readDefenceStatus:(CDVInvokedUrlCommand *)command {
@@ -419,10 +490,79 @@ static NSData *cmdResult;
     bytes[5] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:2] intValue];
     bytes[6] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:3] intValue];
     bytes[4] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:4] intValue];
+    //1 kaiguan 17 dianliang
+    Byte actionType = bytes[4];
+    //{"result":-2,"hz":0.0,"vmp":0.0,"ma":0.0,"pf":0.0,"ac":0.0,"ap":0.0,"checkHz":0,"checkVmp":0,"checkMa":0,"checkPf":0,"checkAc":0}
     [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
     NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
     [udpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
-    [self returnResult:command sendBytes:bytes];
+    [self.commandDelegate runInBackground:^{
+        NSString* result = nil;
+        long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
+        //        NSLog(@"cmdType=%#x",cmdType);
+        while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=timeout) {
+            if (cmdResult!=nil) {
+                Byte *returnByte = (Byte *)[cmdResult bytes];
+                if (actionType==0x01&&returnByte[4]==0x02) {
+                    result = [NSString stringWithFormat:@"{\"result\":%d,\"hz\":0.0,\"vmp\":0.0,\"ma\":0.0,\"pf\":0.0,\"ac\":0.0,\"ap\":0.0,\"checkHz\":0,\"checkVmp\":0,\"checkMa\":0,\"checkPf\":0,\"checkAc\":0}",
+                              returnByte[13]
+                              ];
+                }else {
+                    //pinglv
+                    double hz = 0.00;
+                    if (returnByte[27] == 255) {
+                        returnByte[27] = 100;
+                    }
+                    hz = 1.0*(returnByte[13] * 256 + returnByte[14])*4000* returnByte[27]/32768/100;
+                    //dianya
+                    // 电压计算
+                    double vmp = 0.00;
+                    if (returnByte[28] == 255) {
+                        returnByte[28] = 100;
+                    }
+                    vmp = 1.0*(returnByte[15] * 256 + returnByte[16])* 375.25 * returnByte[28]/ 65536 / 100;
+                    //dianliu
+                    // 电流计算
+                    double ma = 0.00;
+                    if (returnByte[29] == 255) {
+                        returnByte[29] = 100;
+                    }
+                    ma = 1.0*(returnByte[17] * 256 + returnByte[18]) * 250
+                            * returnByte[29]/ 65536 / 100;
+                    //gonglvyinshu
+                    double pf = 0.00;
+                    if (returnByte[30] == 255) {
+                        returnByte[30] = 100;
+                    }
+                    pf = 1.0*(returnByte[19]* 256 + returnByte[20])
+                            * returnByte[30]/ 32768 / 100;
+                    if (pf >= 1.00) {
+                        pf = 1.00;
+                    }
+                    //yougonggonlv
+                    // 有功功率计算
+                    double ac = 0.00;
+                    if (returnByte[31] == 255) {
+                        returnByte[31] = 100;
+                    }
+                    ac = 1.0*((returnByte[21]* 256 + returnByte[22])* 375.25 * 250 * returnByte[31])/ 32768 / 100;
+                    //yougongdianliang
+                    // 有功电量
+                    float ap = (float) (((returnByte[23] << 24)
+                                                 + (returnByte[24] << 16) + (returnByte[25] << 8) + returnByte[26])
+                                                * 375.25 * 250 * returnByte[31] / 32768 / 100 / 1000);
+                    result = [NSString stringWithFormat:@"{\"result\":1,\"hz\":%.1f,\"vmp\":%.1f,\"ma\":%.3f,\"pf\":%.2f,\"ac\":%.1f,\"ap\":%.2f,\"checkHz\":0,\"checkVmp\":0,\"checkMa\":0,\"checkPf\":0,\"checkAc\":0}",hz,vmp,ma,pf,ac,ap];
+                }
+                
+            }else {
+                result = @"{\"result\":-2,\"hz\":0.0,\"vmp\":0.0,\"ma\":0.0,\"pf\":0.0,\"ac\":0.0,\"ap\":0.0,\"checkHz\":0,\"checkVmp\":0,\"checkMa\":0,\"checkPf\":0,\"checkAc\":0}";
+            }
+        }
+        cmdResult = nil;
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:result];
+        //    NSLog(@"ok");
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
 }
 //红外设备：电视／机顶盒／红外空调 控制
 -(void) controlInfrared:(CDVInvokedUrlCommand *)command {
@@ -469,7 +609,29 @@ static NSData *cmdResult;
     [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
     NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
     [udpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
-    [self returnResult:command sendBytes:bytes];
+    Byte actionType = bytes[7];
+    [self.commandDelegate runInBackground:^{
+        NSString* result = nil;
+        long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
+        NSLog(@"cmdType=%#x",cmdType);
+        while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=2000) {
+            if (cmdResult!=nil) {
+                Byte *returnByte = (Byte *)[cmdResult bytes];
+                //            NSLog(@"handler type=%#x\n",cmdType);
+                if (cmdType == returnByte[3]) {
+                    result = actionType==returnByte[13]?@"true":@"false";
+                }else {
+                    result = @"false";
+                }
+            }else {
+                result = @"false";
+            }
+        }
+        cmdResult = nil;
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:result];
+        //    NSLog(@"ok");
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
 }
 //门锁状态读取
 -(void) readDoorLock:(CDVInvokedUrlCommand *)command {
@@ -673,6 +835,8 @@ static NSData *cmdResult;
     //used
     //设备类型,区域id,设备id,读取类型;设备类型,区域id,设备id,读取类型;
     NSString* result = @"";
+    //[{"deviceType":"0","roomZoneNo":1,"deviceNo":1,"obj":-2},{"deviceType":"1","roomZoneNo":1,"deviceNo":1,"obj":-2},{"deviceType":"2","roomZoneNo":1,"deviceNo":1,"obj":{"result":-2,"hz":0.0,"vmp":0.0,"ma":0.0,"pf":0.0,"ac":0.0,"ap":0.0,"checkHz":0,"checkVmp":0,"checkMa":0,"checkPf":0,"checkAc":0}},{"deviceType":"2","roomZoneNo":1,"deviceNo":1,"obj":{"result":-2,"hz":0.0,"vmp":0.0,"ma":0.0,"pf":0.0,"ac":0.0,"ap":0.0,"checkHz":0,"checkVmp":0,"checkMa":0,"checkPf":0,"checkAc":0}},{"deviceType":"4","roomZoneNo":1,"deviceNo":1,"obj":{"mode":0,"speed":0,"temp":0,"action":-2}},{"deviceType":"5","roomZoneNo":1,"deviceNo":1,"obj":-2}]
+
     //used
     //0:ip 1:port 2:data
     //设备类型,区域id,设备id,读取类型;设备类型,区域id,设备id,读取类型;
@@ -682,12 +846,12 @@ static NSData *cmdResult;
     if(count>0) {
         for(int i=0; i<count; i++){
             //NSLog(@"%i-%@", i, [aArray objectAtIndex:i]);
-            NSArray *oneArray =  [[aArray objectAtIndex:i]componentsSeparatedByString:@";"];
+            NSArray *oneArray =  [[aArray objectAtIndex:i]componentsSeparatedByString:@","];
             int deviceType = [oneArray objectAtIndex:0];
             //0：灯光；1：窗帘；2：开关；3：红外设备；4：中央空调；5：门锁；6:电视；7：红外空调
             switch(deviceType) {
                 case 0:
-                    
+//                    self readLightStatus:<#(CDVInvokedUrlCommand *)#>
                     break;
                 case 1:
                     
