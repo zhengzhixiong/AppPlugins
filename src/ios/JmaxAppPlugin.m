@@ -419,7 +419,7 @@ static NSData *cmdResult;
     [self.commandDelegate runInBackground:^{
         NSString* result = nil;
         long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
-//        NSLog(@"cmdType=%#x",cmdType);
+        //        NSLog(@"cmdType=%#x",cmdType);
         while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=timeout) {
             if (cmdResult!=nil) {
                 Byte *returnByte = (Byte *)[cmdResult bytes];
@@ -528,14 +528,14 @@ static NSData *cmdResult;
                         returnByte[29] = 100;
                     }
                     ma = 1.0*(returnByte[17] * 256 + returnByte[18]) * 250
-                            * returnByte[29]/ 65536 / 100;
+                    * returnByte[29]/ 65536 / 100;
                     //gonglvyinshu
                     double pf = 0.00;
                     if (returnByte[30] == 255) {
                         returnByte[30] = 100;
                     }
                     pf = 1.0*(returnByte[19]* 256 + returnByte[20])
-                            * returnByte[30]/ 32768 / 100;
+                    * returnByte[30]/ 32768 / 100;
                     if (pf >= 1.00) {
                         pf = 1.00;
                     }
@@ -549,8 +549,8 @@ static NSData *cmdResult;
                     //yougongdianliang
                     // 有功电量
                     float ap = (float) (((returnByte[23] << 24)
-                                                 + (returnByte[24] << 16) + (returnByte[25] << 8) + returnByte[26])
-                                                * 375.25 * 250 * returnByte[31] / 32768 / 100 / 1000);
+                                         + (returnByte[24] << 16) + (returnByte[25] << 8) + returnByte[26])
+                                        * 375.25 * 250 * returnByte[31] / 32768 / 100 / 1000);
                     result = [NSString stringWithFormat:@"{\"result\":1,\"hz\":%.1f,\"vmp\":%.1f,\"ma\":%.3f,\"pf\":%.2f,\"ac\":%.1f,\"ap\":%.2f,\"checkHz\":0,\"checkVmp\":0,\"checkMa\":0,\"checkPf\":0,\"checkAc\":0}",hz,vmp,ma,pf,ac,ap];
                 }
                 
@@ -830,42 +830,68 @@ static NSData *cmdResult;
 -(void) sceneListConfig:(CDVInvokedUrlCommand *)command {
     
 }
++ (BOOL) isBlankString:(NSString *)string {
+    if (string == nil || string == NULL) {
+        return YES;
+    }
+    if ([string isKindOfClass:[NSNull class]]) {
+        return YES;
+    }
+    if ([[string stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]] length]==0) {
+        return YES;
+    }
+    return NO;
+}
 //读取设备信息
 -(void) readDeviceInfos:(CDVInvokedUrlCommand *)command {
     //used
     //设备类型,区域id,设备id,读取类型;设备类型,区域id,设备id,读取类型;
-    NSString* result = @"";
+    NSString* result = @"[";
     //[{"deviceType":"0","roomZoneNo":1,"deviceNo":1,"obj":-2},{"deviceType":"1","roomZoneNo":1,"deviceNo":1,"obj":-2},{"deviceType":"2","roomZoneNo":1,"deviceNo":1,"obj":{"result":-2,"hz":0.0,"vmp":0.0,"ma":0.0,"pf":0.0,"ac":0.0,"ap":0.0,"checkHz":0,"checkVmp":0,"checkMa":0,"checkPf":0,"checkAc":0}},{"deviceType":"2","roomZoneNo":1,"deviceNo":1,"obj":{"result":-2,"hz":0.0,"vmp":0.0,"ma":0.0,"pf":0.0,"ac":0.0,"ap":0.0,"checkHz":0,"checkVmp":0,"checkMa":0,"checkPf":0,"checkAc":0}},{"deviceType":"4","roomZoneNo":1,"deviceNo":1,"obj":{"mode":0,"speed":0,"temp":0,"action":-2}},{"deviceType":"5","roomZoneNo":1,"deviceNo":1,"obj":-2}]
-
+    
     //used
     //0:ip 1:port 2:data
     //设备类型,区域id,设备id,读取类型;设备类型,区域id,设备id,读取类型;
     NSString *data = [command.arguments objectAtIndex:2];
-    NSArray *aArray = [data componentsSeparatedByString:@";"];
-    int count = aArray.count;//减少调用次数
+    NSArray *array = [data componentsSeparatedByString:@";"];
+    int count = [array count];//减少调用次数
     if(count>0) {
         for(int i=0; i<count; i++){
-            //NSLog(@"%i-%@", i, [aArray objectAtIndex:i]);
-            NSArray *oneArray =  [[aArray objectAtIndex:i]componentsSeparatedByString:@","];
-            int deviceType = [oneArray objectAtIndex:0];
-            //0：灯光；1：窗帘；2：开关；3：红外设备；4：中央空调；5：门锁；6:电视；7：红外空调
-            switch(deviceType) {
-                case 0:
-//                    self readLightStatus:<#(CDVInvokedUrlCommand *)#>
-                    break;
-                case 1:
-                    
-                    break;
-                case 2:
-                    
-                    break;
+            
+            if (![JmaxAppPlugin isBlankString:[array objectAtIndex:i]]) {
+//                NSLog(@"%i-%@", i, [array objectAtIndex:i]);
+                //not blank
+                NSArray *oneArray =  [[array objectAtIndex:i]componentsSeparatedByString:@","];
+                int deviceType = [[oneArray objectAtIndex:0] intValue];
+                //0：灯光；1：窗帘；2：开关；3：红外设备；4：中央空调；5：门锁；6:电视；7：红外空调
+//                NSLog(@"deviceType=%d",deviceType);
+                switch(deviceType) {
+                    case 0:
+                        result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"0\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":-2},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]]];
+                        break;
+                    case 1:
+                        result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"1\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":-2},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]]];
+                        break;
+                    case 2:
+                        result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"2\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":{\"result\":-2,\"hz\":0.0,\"vmp\":0.0,\"ma\":0.0,\"pf\":0.0,\"ac\":0.0,\"ap\":0.0,\"checkHz\":0,\"checkVmp\":0,\"checkMa\":0,\"checkPf\":0,\"checkAc\":0}},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]]];
+                        break;
+                    case 4:
+                        result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"4\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":{\"mode\":0,\"speed\":0,\"temp\":0,\"action\":-2}},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]]];
+                        break;
+                    case 5:
+                        result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"5\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":-2},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]]];
+                        break;
+                }
             }
+            
         }
     }
+    result = [result substringToIndex:[result length]-1];
+    result = [result stringByAppendingString:@"]"];
     
     [self.commandDelegate runInBackground:^{
         CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:result];
-        //    NSLog(@"ok");
+        NSLog(result);
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }];
 }
@@ -943,9 +969,9 @@ static NSData *cmdResult;
     CC_MD5(original_str, strlen(original_str), digist);
     NSMutableString* outPutStr = [NSMutableString stringWithCapacity:10];
     for(int  i =0; i<CC_MD5_DIGEST_LENGTH;i++){
-        [outPutStr appendFormat:@"%02x", digist[i]];//小写x表示输出的是小写MD5，大写X表示输出的是大写MD5
+        [outPutStr appendFormat:@"%02X", digist[i]];//小写x表示输出的是小写MD5，大写X表示输出的是大写MD5
     }
-    return [outPutStr lowercaseString];
+    return [outPutStr uppercaseString];
 }
 
 +(void)getCheckByte:(Byte[])bytes sizeParam:(int)size {
