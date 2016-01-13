@@ -1,6 +1,7 @@
 #import <Cordova/CDV.h>
 #import "AsyncUdpSocket.h"
 #import <CommonCrypto/CommonDigest.h>
+#import "GCDAsyncUdpSocket.h"
 #define FileHashDefaultChunkSizeForReadingData 1024*8 // 8K
 @interface JmaxAppPlugin : CDVPlugin {
     //     NSString *host;
@@ -11,6 +12,7 @@
     //     Byte cmdType;
     //     NSData* cmdResult;
     //    CDVInvokedUrlCommand *command;
+    
 }
 -(void)test:(CDVInvokedUrlCommand*)command;
 

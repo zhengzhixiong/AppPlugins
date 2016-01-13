@@ -61,6 +61,10 @@
 	    <source-file src="src/ios/JmaxAppPlugin.m"/>
 		<header-file src="src/ios/AsyncUdpSocket.h"/>
 	    <source-file src="src/ios/AsyncUdpSocket.m"/>
+	    <header-file src="src/ios/GCDAsyncSocket.h"/>
+	    <source-file src="src/ios/GCDAsyncSocket.m"/>
+	    <header-file src="src/ios/GCDAsyncUdpSocket.h"/>
+	    <source-file src="src/ios/GCDAsyncUdpSocket.m"/>
 	    <framework src="QuartzCore.framework" />
 	  </platform>
 	
