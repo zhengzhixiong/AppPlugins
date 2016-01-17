@@ -379,8 +379,8 @@ withFilterContext:(id)filterContext
 }
 -(NSString*) readCurtainStatus:(Byte) areaNo secondDeviceNo:(Byte) deviceNo{
     Byte bytes[] = {0xAE,0xD0,0x08,0x83,0x01,0x00,0x00,0x01};
-//    bytes[5] = areaNo;
-//    bytes[6] = deviceNo;
+    bytes[5] = areaNo;
+    bytes[6] = deviceNo;
     [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
     NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
     [gcdUdpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
@@ -430,7 +430,7 @@ withFilterContext:(id)filterContext
     [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
     NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
     [gcdUdpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
-    Byte actionType = bytes[7];
+//    Byte actionType = bytes[7];
     [self.commandDelegate runInBackground:^{
         NSString* result = nil;
         long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
@@ -487,6 +487,16 @@ withFilterContext:(id)filterContext
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }];
 }
+//中央空调状态
+-(NSString*) readAirStatus:(Byte) areaNo secondDeviceNo:(Byte) deviceNo {
+    Byte bytes[] = {0xAE,0xD0,0x08,0x84,0x01,0x01,0x00,0x01};
+    bytes[5] = areaNo;
+    bytes[6] = deviceNo;
+    [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
+    NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
+    [gcdUdpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
+    return @"-2";
+}
 //防区状态读取
 -(void) readDefenceStatus:(CDVInvokedUrlCommand *)command {
     Byte bytes[] = {0xAE,0xD0,0x07,0x85,0x01,0x01};
@@ -534,6 +544,18 @@ withFilterContext:(id)filterContext
     
 }
 //开关／电器状态读取
+-(NSString *) readSwitchStatus:(Byte) areaNo secondDeviceNo:(Byte) deviceNo action:(Byte) action{
+    Byte bytes[] = {0xAE,0xD0,0x08,0x86,0x01,0x01,0x01,0x01};
+    bytes[5] = areaNo;
+    bytes[6] = deviceNo;
+    bytes[4] = action;
+    //1 kaiguan 17 dianliang
+    //{"result":-2,"hz":0.0,"vmp":0.0,"ma":0.0,"pf":0.0,"ac":0.0,"ap":0.0,"checkHz":0,"checkVmp":0,"checkMa":0,"checkPf":0,"checkAc":0}
+    [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
+    NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
+    [gcdUdpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
+    return @"-2";
+}
 -(void) readSwitchStatus:(CDVInvokedUrlCommand *)command {
     Byte bytes[] = {0xAE,0xD0,0x08,0x86,0x01,0x01,0x01,0x01};
     cmdType = bytes[3];
@@ -549,7 +571,7 @@ withFilterContext:(id)filterContext
     [self.commandDelegate runInBackground:^{
         NSString* result = nil;
         long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
-                NSLog(@"cmdType=%#x",cmdType);
+        NSLog(@"cmdType=%#x",cmdType);
         while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=timeout) {
             if (cmdResult!=nil) {
                 Byte *returnByte = (Byte *)[cmdResult bytes];
@@ -615,7 +637,7 @@ withFilterContext:(id)filterContext
     }];
 }
 //红外设备：电视／机顶盒／红外空调 控制
--(void) controlInfrared:(CDVInvokedUrlCommand *)command {
+-(NSString*) controlInfrared:(CDVInvokedUrlCommand *)command {
     Byte bytes[] = {0xAE,0xD0,0x09,0x07,0x01,0x00,0x00,0x01,0x01};
     cmdType = bytes[3];
     bytes[5] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:2] intValue];
@@ -695,6 +717,15 @@ withFilterContext:(id)filterContext
     NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
     [gcdUdpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
     [self returnResult:command sendBytes:bytes];
+}
+-(NSString*) readDoorLock:(Byte) areaNo secondDeviceNo:(Byte) deviceNo {
+    Byte bytes[] = {0xAE,0xD0,0x08,0x88,0x01,0x00,0x00,0x00};
+    bytes[5] = areaNo;
+    bytes[6] = deviceNo;
+    [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
+    NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
+    [gcdUdpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
+    return @"-2";
 }
 //对码控制
 -(void) checkControl:(CDVInvokedUrlCommand *)command {
@@ -996,13 +1027,16 @@ withFilterContext:(id)filterContext
                     result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"1\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2],rs]];
                     break;
                     case 2:
-                    result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"2\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":{\"result\":-2,\"hz\":0.0,\"vmp\":0.0,\"ma\":0.0,\"pf\":0.0,\"ac\":0.0,\"ap\":0.0,\"checkHz\":0,\"checkVmp\":0,\"checkMa\":0,\"checkPf\":0,\"checkAc\":0}},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]]];
+                    rs = [self readSwitchStatus:[[oneArray objectAtIndex:1] intValue] secondDeviceNo:[[oneArray objectAtIndex:2] intValue] action:0x01];
+                    result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"2\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":{\"result\":%@,\"hz\":0.0,\"vmp\":0.0,\"ma\":0.0,\"pf\":0.0,\"ac\":0.0,\"ap\":0.0,\"checkHz\":0,\"checkVmp\":0,\"checkMa\":0,\"checkPf\":0,\"checkAc\":0}},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2],rs]];
                     break;
                     case 4:
+                    rs = [self readDoorLock:[[oneArray objectAtIndex:1] intValue] secondDeviceNo:[[oneArray objectAtIndex:2] intValue]];
                     result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"4\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":{\"mode\":0,\"speed\":0,\"temp\":0,\"action\":-2}},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]]];
                     break;
                     case 5:
-                    result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"5\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":-2},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]]];
+                    rs = [self readDoorLock:[[oneArray objectAtIndex:1] intValue] secondDeviceNo:[[oneArray objectAtIndex:2] intValue]];
+                    result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"5\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2],rs]];
                     break;
                 }
             }
@@ -1017,7 +1051,7 @@ withFilterContext:(id)filterContext
         long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
         NSLog(@"cmdType=%#x",cmdType);
         NSString* rs = nil;
-        while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=5000) {
+        while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=4000) {
             if ([readDeviceStatusArray count]==count) {
                 NSLog(@"readDeviceStatusArray size=%d",[readDeviceStatusArray count]);
                 rs = @"[";
@@ -1031,13 +1065,12 @@ withFilterContext:(id)filterContext
                             rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"1\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":%d},",testByte[11],testByte[12],testByte[13]]];
                             break;
                         case 0x86:
-                            rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"2\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":{\"result\":-2,\"hz\":0.0,\"vmp\":0.0,\"ma\":0.0,\"pf\":0.0,\"ac\":0.0,\"ap\":0.0,\"checkHz\":0,\"checkVmp\":0,\"checkMa\":0,\"checkPf\":0,\"checkAc\":0}},",testByte[5],testByte[6]]];
+                            rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"2\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":{\"result\":%d,\"hz\":0.0,\"vmp\":0.0,\"ma\":0.0,\"pf\":0.0,\"ac\":0.0,\"ap\":0.0,\"checkHz\":0,\"checkVmp\":0,\"checkMa\":0,\"checkPf\":0,\"checkAc\":0}},",testByte[11],testByte[12],testByte[13]]];
                             break;
-                        case 0x84:
-                            rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"4\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":{\"mode\":0,\"speed\":0,\"temp\":0,\"action\":-2}},",testByte[11],testByte[12]]];
+                        rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"4\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":{\"mode\":%d,\"speed\":%d,\"temp\":%d,\"action\":%d}},",testByte[11],testByte[12],testByte[14],testByte[15],testByte[16],testByte[13]]];
                             break;
                         case 0x88:
-                            rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"5\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":-2},",testByte[5],testByte[6]]];
+                            rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"5\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":%d},",testByte[11],testByte[12],testByte[13]]];
                             break;
                     }
                 }
@@ -1048,6 +1081,32 @@ withFilterContext:(id)filterContext
             
         }
         
+        if ([readDeviceStatusArray count]!=count&&[readDeviceStatusArray count]>0) {
+            NSLog(@"not all readDeviceStatusArray size=%d",[readDeviceStatusArray count]);
+            rs = @"[";
+            for (NSData *data in readDeviceStatusArray) {
+                Byte *testByte = (Byte *)[data bytes];
+                switch(testByte[3]) {
+                    case 0x82:
+                    rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"0\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":%d},",testByte[11],testByte[12],testByte[13]]];
+                    break;
+                    case 0x83:
+                    rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"1\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":%d},",testByte[11],testByte[12],testByte[13]]];
+                    break;
+                    case 0x86:
+                    rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"2\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":{\"result\":%d,\"hz\":0.0,\"vmp\":0.0,\"ma\":0.0,\"pf\":0.0,\"ac\":0.0,\"ap\":0.0,\"checkHz\":0,\"checkVmp\":0,\"checkMa\":0,\"checkPf\":0,\"checkAc\":0}},",testByte[11],testByte[12],testByte[13]]];
+                    break;
+                    case 0x84:
+                    rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"4\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":{\"mode\":%d,\"speed\":%d,\"temp\":%d,\"action\":%d}},",testByte[11],testByte[12],testByte[14],testByte[15],testByte[16],testByte[13]]];
+                    break;
+                    case 0x88:
+                    rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"5\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":%d},",testByte[11],testByte[12],testByte[13]]];
+                    break;
+                }
+            }
+            rs = [rs substringToIndex:[rs length]-1];
+            rs = [rs stringByAppendingString:@"]"];
+        }
         
         CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:rs==nil?result:rs];
         NSLog(rs);
