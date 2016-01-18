@@ -137,7 +137,7 @@ withFilterContext:(id)filterContext
 
 //init server //初始化本地socket服务
 -(void) initServer:(CDVInvokedUrlCommand *)command {
-    if (gcdUdpSocket==nil) {
+//    if (gcdUdpSocket==nil) {
         gcdUdpSocket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
         gcdUdpSocket.delegate=self;
         [gcdUdpSocket enableBroadcast:YES error:nil];
@@ -152,7 +152,7 @@ withFilterContext:(id)filterContext
             NSLog(@"beginReceiving error");
         }
         
-    }
+//    }
     
     //4 smartgateIp 5 smartgatePort
     host = [command.arguments objectAtIndex:4];
@@ -1000,7 +1000,7 @@ withFilterContext:(id)filterContext
     NSString* result = @"[";
     NSString *data = [command.arguments objectAtIndex:2];
     NSArray *array = [data componentsSeparatedByString:@";"];
-    
+    NSLog(data);
     NSString* rs = @"";
     int count = [array count]-1;//减少调用次数
     if(count>0) {
@@ -1031,7 +1031,7 @@ withFilterContext:(id)filterContext
                     result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"2\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":{\"result\":%@,\"hz\":0.0,\"vmp\":0.0,\"ma\":0.0,\"pf\":0.0,\"ac\":0.0,\"ap\":0.0,\"checkHz\":0,\"checkVmp\":0,\"checkMa\":0,\"checkPf\":0,\"checkAc\":0}},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2],rs]];
                     break;
                     case 4:
-                    rs = [self readDoorLock:[[oneArray objectAtIndex:1] intValue] secondDeviceNo:[[oneArray objectAtIndex:2] intValue]];
+                    rs = [self readAirStatus:[[oneArray objectAtIndex:1] intValue] secondDeviceNo:[[oneArray objectAtIndex:2] intValue]];
                     result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"4\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":{\"mode\":0,\"speed\":0,\"temp\":0,\"action\":-2}},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]]];
                     break;
                     case 5:
