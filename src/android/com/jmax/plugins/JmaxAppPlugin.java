@@ -327,10 +327,13 @@ public class JmaxAppPlugin extends CordovaPlugin {
 							result = SendHandler.readDeviceInfos(udpInfo,
 									args.getString(0), args.getInt(1),
 									args.getString(2));
+						}else if ("setDoorPwd".equals(action)) {
+							// 设置门临时密码
+							rs = SendHandler.setDoorPassword(udpInfo,
+									args.getInt(0), args.getInt(1),
+									args.getString(2));
+							result = rs+"";
 						}
-						// }else {
-						// result = "ConnectError";
-						// }
 
 						// 处理结果
 						Message msg = new Message();
