@@ -331,6 +331,10 @@ JmaxAppPlugin.prototype.setDoorPwd = function(ip,port,areaNo,deviceNo,pwd,jsonOb
 		 if(callback) {
 			 callback(rs,jsonObj);
 		 }
-	 }, null, "JmaxAppPlugin", "setDoorPwd", [areaNo,deviceNo,pwd]);
+	 }, function(error){
+		 if(callback) {
+			 callback("false",jsonObj);
+		 }
+	 }, "JmaxAppPlugin", "setDoorPwd", [areaNo,deviceNo,pwd]);
 };
 module.exports = new JmaxAppPlugin();
