@@ -331,7 +331,7 @@ public class JmaxAppPlugin extends CordovaPlugin {
 							// 设置门临时密码
 							rs = SendHandler.setDoorPassword(udpInfo,
 									args.getInt(0), args.getInt(1),
-									args.getString(2));
+									args.getString(2),6000);
 							result = rs+"";
 						}
 
