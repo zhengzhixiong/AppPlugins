@@ -137,7 +137,7 @@ withFilterContext:(id)filterContext
 
 //init server //初始化本地socket服务
 -(void) initServer:(CDVInvokedUrlCommand *)command {
-//    if (gcdUdpSocket==nil) {
+    if (gcdUdpSocket==nil) {
         gcdUdpSocket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
         gcdUdpSocket.delegate=self;
         [gcdUdpSocket enableBroadcast:YES error:nil];
@@ -152,7 +152,7 @@ withFilterContext:(id)filterContext
             NSLog(@"beginReceiving error");
         }
         
-//    }
+    }
     
     //4 smartgateIp 5 smartgatePort
     host = [command.arguments objectAtIndex:4];
@@ -180,7 +180,7 @@ withFilterContext:(id)filterContext
     NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
     //     NSLog(@"readNetConfig,host=%@,port=%d",host,port);
     //    command = command;
-    [gcdUdpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
+    [gcdUdpSocket sendData:data toHost:@"255.255.255.255" port:port withTimeout:-1 tag:tag];
     //    [self returnResult:command sendBytes:bytes];
     [self.commandDelegate runInBackground:^{
         NSString* result = nil;
@@ -637,7 +637,7 @@ withFilterContext:(id)filterContext
     }];
 }
 //红外设备：电视／机顶盒／红外空调 控制
--(NSString*) controlInfrared:(CDVInvokedUrlCommand *)command {
+-(void) controlInfrared:(CDVInvokedUrlCommand *)command {
     Byte bytes[] = {0xAE,0xD0,0x09,0x07,0x01,0x00,0x00,0x01,0x01};
     cmdType = bytes[3];
     bytes[5] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:2] intValue];
@@ -670,7 +670,6 @@ withFilterContext:(id)filterContext
         //    NSLog(@"ok");
         [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
     }];
-    
 }
 //门锁控制
 -(void) controlDoorLock:(CDVInvokedUrlCommand *)command {
@@ -687,7 +686,7 @@ withFilterContext:(id)filterContext
         NSString* result = nil;
         long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
         NSLog(@"cmdType=%#x",cmdType);
-        while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=2000) {
+        while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=8000) {
             if (cmdResult!=nil) {
                 Byte *returnByte = (Byte *)[cmdResult bytes];
                 //            NSLog(@"handler type=%#x\n",cmdType);
@@ -697,6 +696,61 @@ withFilterContext:(id)filterContext
                 }else {
                     result = @"false";
                 }
+            }else {
+                result = @"false";
+            }
+        }
+        cmdResult = nil;
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:result];
+        //    NSLog(@"ok");
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
+}
+//设置门锁临时密码
+-(void) setDoorPwd:(CDVInvokedUrlCommand *)command {
+    NSString *pwd = [command.arguments objectAtIndex:2];
+    int pwdLength = [pwd length];
+    int lengt = pwdLength+9;
+    
+    Byte bytes[lengt];
+    
+    
+    bytes[0] = (Byte)0xAE;
+    bytes[1] = (Byte)0xD0;
+    //设置数据长度
+    bytes[2] = (Byte) (pwdLength+9);
+    
+    bytes[3] = (Byte)0x31;
+    bytes[4] = (Byte)0x01;
+    //设置区域号
+    bytes[5] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:0] intValue];
+    //设置设备号
+    bytes[6] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:1] intValue];
+    //设置时间
+    bytes[7] = (Byte)0x05;
+    cmdType = bytes[3];
+    //根据密码设置密码长度
+    for (int i = 0; i < pwdLength; i++) {
+        
+        bytes[8+i] = (Byte) [[pwd substringWithRange:NSMakeRange(i, 1)] intValue];
+    }
+    
+    
+    [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
+    
+    for(int i=0;i<sizeof(bytes);i++)
+    printf(" %#x ",bytes[i]);
+    
+    NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
+    [gcdUdpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
+//    Byte actionType = bytes[7];
+    [self.commandDelegate runInBackground:^{
+        NSString* result = nil;
+        long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
+        NSLog(@"cmdType=%#x",cmdType);
+        while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=6000) {
+            if (cmdResult!=nil) {
+                result = @"true";
             }else {
                 result = @"false";
             }

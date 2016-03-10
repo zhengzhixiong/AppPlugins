@@ -52,6 +52,8 @@
 -(void) controlDoorLock:(CDVInvokedUrlCommand *)command;
 //门锁状态读取
 -(void) readDoorLock:(CDVInvokedUrlCommand *)command;
+//设置门锁临时密码
+-(void) setDoorPwd:(CDVInvokedUrlCommand *)command;
 //对码控制
 -(void) checkControl:(CDVInvokedUrlCommand *)command;
 
