@@ -137,7 +137,10 @@ withFilterContext:(id)filterContext
 
 //init server //初始化本地socket服务
 -(void) initServer:(CDVInvokedUrlCommand *)command {
-    if (gcdUdpSocket==nil) {
+    NSString *flag = [command.arguments objectAtIndex:0];
+    //-9999 is check is resume if true reinit [flag isEqualToString:@"-9999"]
+    //add if serveic is closed or lock ,the udp server is not running
+    if (gcdUdpSocket==nil|| [gcdUdpSocket isClosed]) {
         gcdUdpSocket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
         gcdUdpSocket.delegate=self;
         [gcdUdpSocket enableBroadcast:YES error:nil];
