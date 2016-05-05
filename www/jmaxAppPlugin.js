@@ -31,7 +31,7 @@ JmaxAppPlugin.prototype.initServer = function(gateType,buildNo,unitNo,houseNo,sm
 		 if(callback) {
 			 callback(rs);
 		 }
-	 }, null, "JmaxAppPlugin", "initServer", [proNo,buildNo,unitNo,houseNo,smartIp,smartPort,localPort]);
+	 }, null, "JmaxAppPlugin", "initServer", [gateType,buildNo,unitNo,houseNo,smartIp,smartPort,localPort]);
 };
 //控制场景
 JmaxAppPlugin.prototype.controlScene = function(ip,port,sceneNo,callback) {
