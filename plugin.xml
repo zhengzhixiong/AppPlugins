@@ -65,6 +65,8 @@
 	    <source-file src="src/ios/GCDAsyncSocket.m"/>
 	    <header-file src="src/ios/GCDAsyncUdpSocket.h"/>
 	    <source-file src="src/ios/GCDAsyncUdpSocket.m"/>
+	    <header-file src="src/ios/TcpCommand.h"/>
+	    <source-file src="src/ios/TcpCommand.m"/>
 	    <framework src="QuartzCore.framework" />
 	  </platform>
 	

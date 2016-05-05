@@ -25,8 +25,8 @@ JmaxAppPlugin.prototype.initLocalServer = function(port,callback) {
 		 }
 	 }, null, "JmaxAppPlugin", "initLocalServer", [port]);
 };
-//初始化服务信息：项目序号、楼栋序号、单元序号、房屋号 、目标ip（局域网ip）、目标端口，本地端口
-JmaxAppPlugin.prototype.initServer = function(proNo,buildNo,unitNo,houseNo,smartIp,smartPort,localPort,callback) {
+//初始化服务信息：网关通信类型（0：udp 1：tcp）、楼栋序号（无效，传0）、单元序号（无效，传0）、房屋号（无效，传0） 、目标ip（局域网ip）、目标端口，本地端口（无效，传0）
+JmaxAppPlugin.prototype.initServer = function(gateType,buildNo,unitNo,houseNo,smartIp,smartPort,localPort,callback) {
 	 exec(function(rs){ 
 		 if(callback) {
 			 callback(rs);

@@ -3,11 +3,16 @@
 #import "GCDAsyncSocket.h"
 #include <ifaddrs.h>
 #include <arpa/inet.h>
+#include "TcpCommand.h"
 static int timeout = 300;
 static NSString *host;
+static int gateType;
 static int port;
 static long tag;
+static long SEND_TAG;
+static long RECE_TAG;
 static GCDAsyncUdpSocket *gcdUdpSocket;
+static GCDAsyncSocket *tcpSocket;
 static int localPort;
 static Byte cmdType;
 static NSData *cmdResult;
@@ -135,33 +140,88 @@ withFilterContext:(id)filterContext
     }];
 }
 
+///////////////tcp//////////////
+
+- (void)socketDidSecure:(GCDAsyncSocket *)sock
+{
+    NSLog(@"socketDidSecure:%p", sock);
+//    self.receView.text = [NSString stringWithFormat:@"%@\r\n-->recived:%@\r\n",self.receView.text,@"Connected + Secure"];
+    
+    NSString *requestStr = [NSString stringWithFormat:@"GET / HTTP/1.1\r\nHost: %@\r\n\r\n", @"192.168.1.105"];
+    NSData *requestData = [requestStr dataUsingEncoding:NSUTF8StringEncoding];
+    
+    [sock writeData:requestData withTimeout:-1 tag:0];
+    [sock readDataToData:[GCDAsyncSocket CRLFData] withTimeout:-1 tag:0];
+}
+
+- (void)socket:(GCDAsyncSocket *)sock didWriteDataWithTag:(long)tag
+{
+    NSLog(@"socket:%p didWriteDataWithTag:%ld", sock, tag);
+}
+
+- (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag
+{
+    NSLog(@"socket:%p didReadData:withTag:%ld", sock, tag);
+    
+    cmdResult = data;
+//    
+//    NSString *s = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
+    
+//    UIAlertView* av=[[UIAlertView alloc]initWithTitle:@"接收数据" message:s delegate:nil cancelButtonTitle:@"OK"otherButtonTitles:nil,nil];
+//    
+//    [av show];
+//    
+//    
+//    [sock readDataWithTimeout:-1 tag:1];//持续接收服务端放回的数据
+}
+
+- (void)socketDidDisconnect:(GCDAsyncSocket *)sock withError:(NSError *)err
+{
+    NSLog(@"socketDidDisconnect:%p withError: %@", sock, err);
+}
+
+////////////tcp////////////////
+
 //init server //初始化本地socket服务
 -(void) initServer:(CDVInvokedUrlCommand *)command {
-    NSString *flag = [command.arguments objectAtIndex:0];
-    //-9999 is check is resume if true reinit [flag isEqualToString:@"-9999"]
-    //add if serveic is closed or lock ,the udp server is not running
-    if (gcdUdpSocket==nil|| [gcdUdpSocket isClosed]) {
-        gcdUdpSocket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
-        gcdUdpSocket.delegate=self;
-        [gcdUdpSocket enableBroadcast:YES error:nil];
-        NSError *error = nil;
-        
-        if (![gcdUdpSocket bindToPort:16000 error:&error])
-        {
-            NSLog(@"bindToPort error");
-        }
-        if (![gcdUdpSocket beginReceiving:&error])
-        {
-            NSLog(@"beginReceiving error");
-        }
-        
-    }
-    
+    gateType = [[command.arguments objectAtIndex:0] intValue];
     //4 smartgateIp 5 smartgatePort
     host = [command.arguments objectAtIndex:4];
     port = [(NSNumber *)[command.arguments objectAtIndex:5] intValue];
+    if(gateType==0) {
+        if (gcdUdpSocket==nil|| [gcdUdpSocket isClosed]) {
+            gcdUdpSocket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
+            gcdUdpSocket.delegate=self;
+            [gcdUdpSocket enableBroadcast:YES error:nil];
+            NSError *error = nil;
+            
+            if (![gcdUdpSocket bindToPort:16000 error:&error])
+            {
+                NSLog(@"bindToPort error");
+            }
+            if (![gcdUdpSocket beginReceiving:&error])
+            {
+                NSLog(@"beginReceiving error");
+            }
+            
+        }
+        NSLog(@"UDP IS Ready,host=%@,port=%d",host,port);
+    }
+    else
+    {
+        
+        tcpSocket = [[GCDAsyncSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
+        
+        if (![tcpSocket connectToHost:host onPort:port error:nil])
+        {
+            NSLog(@"tcp connecting: error");
+        }else {
+            NSLog(@"tcp connecting......");
+        }
+
+    }
     
-    NSLog(@"UDP IS Ready,host=%@,port=%d",host,port);
+    
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"true"];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
@@ -219,16 +279,72 @@ withFilterContext:(id)filterContext
     
     
 }
-
+/////////tcp send
+-(void)sendTcpData:(NSData*)data {
+    int length = data.length+8;
+    Byte bytes[length];
+    bytes[0] = 0x5A;
+    bytes[1] = 0xA5;
+    int headLength = data.length+4;
+    bytes[2] = (headLength>>8&0xff);
+    bytes[3] = (headLength&0xff);
+    Byte *testByte = (Byte *)[data bytes];
+    int check = headLength;
+    for(int i=0;i<[data length];i++)
+    {
+//        printf("%#x ",testByte[i]);
+        bytes[i+4]=testByte[i];
+        check = check +(testByte[i]&0xff);
+    }
+    
+    bytes[length-4] = (check>>8)&0xff;
+    bytes[length-3] = check&0xff;
+    
+    bytes[length-1] = 0x5A;
+    bytes[length-2] = 0xA5;
+    
+    NSData *data2 = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
+    [tcpSocket writeData:data2 withTimeout:-1. tag:0];
+}
+-(void)returnTcpResult:(CDVInvokedUrlCommand*)command tag:(long)tag {
+    [self.commandDelegate runInBackground:^{
+        printf("returnTcpResultHanlder");
+        NSString* result = nil;
+        NSString* key = nil;
+        long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
+        while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=timeout) {
+            if (cmdResult!=nil) {
+              result = @"true";
+            }else {
+              result = @"false";
+            }
+            
+        }
+        cmdResult = nil;
+        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:result];
+        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
+    
+}
+/////////
 //场景控制
 -(void) controlScene:(CDVInvokedUrlCommand *)command {
-    Byte bytes[] = {0xAE,0xD0,0x07,0x01,0x01,0x01,0x00};
-    cmdType = bytes[3];
-    bytes[5] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:2] intValue];
-    [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
-    NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
-    [gcdUdpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
-    [self returnResult:command sendBytes:bytes];
+    if (gateType==0) {
+        Byte bytes[] = {0xAE,0xD0,0x07,0x01,0x01,0x01,0x00};
+        cmdType = bytes[3];
+        bytes[5] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:2] intValue];
+        [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
+        NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
+        [gcdUdpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
+        [self returnResult:command sendBytes:bytes];
+    }
+    else
+    {
+        NSData *requestData = [TcpCommand getCtrlSceneCmd:SEND_TAG++ sceneNo:[[command.arguments objectAtIndex:2] intValue]];
+        [self sendTcpData:requestData];
+        [self returnTcpResult:command tag:SEND_TAG];
+    }
+    
 }
 
 //灯光控制

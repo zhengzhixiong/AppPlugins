@@ -2,6 +2,7 @@
 #import "AsyncUdpSocket.h"
 #import <CommonCrypto/CommonDigest.h>
 #import "GCDAsyncUdpSocket.h"
+#import "TcpCommand.h"
 #define FileHashDefaultChunkSizeForReadingData 1024*8 // 8K
 @interface JmaxAppPlugin : CDVPlugin {
     //     NSString *host;
