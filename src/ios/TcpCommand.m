@@ -66,16 +66,19 @@
 //    //重新解析JSON数据
 //    NSString *strjson=[[NSString alloc]initWithData:json encoding:NSUTF8StringEncoding];
 //    NSLog(@"%@",strjson);
-
     
-    NSMutableDictionary *dictionary = [[NSMutableDictionary alloc]init];
-    [dictionary setValue:@"readDev" forKey:@"action"];
-    [dictionary setValue:@"curtain" forKey:@"devType"];
+    
+    NSArray *arry= @[];
+    NSDictionary *dictionary=[[NSDictionary alloc]initWithObjectsAndKeys:@"readDev",@"action" ,[NSNumber numberWithInteger:flag],@"flag",arry,@"devList",nil];
+    
+//    NSMutableDictionary *dictionary = [[NSMutableDictionary alloc]init];
+//    [dictionary setValue:@"readDev" forKey:@"action"];
+//    [dictionary setValue:@"curtain" forKey:@"devType"];
 //    [dictionary setValue:[NSNumber numberWithInteger:areaNo] forKey:@"areaNo"];
 //    [dictionary setValue:[NSNumber numberWithInteger:devNo] forKey:@"devNo"];
 //    [dictionary setValue:[NSNumber numberWithInteger:status] forKey:@"status"];
 //    [dictionary setValue:@"devList" forKey:devArray];
-    [dictionary setValue:[NSNumber numberWithInteger:flag] forKey:@"flag"];
+//    [dictionary setValue:[NSNumber numberWithInteger:flag] forKey:@"flag"];
     NSData *requestData = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:nil];
     return requestData;
 }
