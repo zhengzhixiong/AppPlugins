@@ -18,6 +18,7 @@ static Byte cmdType;
 static NSData *cmdResult;
 static NSMutableArray *readDeviceStatusArray;
 static NSMutableArray *sceneConfigArray;
+static NSString *tcpCmdType;
 @implementation JmaxAppPlugin
 
 -(void)socket:(GCDAsyncSocket *)socket didConnectToHost:(NSString *)host port:(uint16_t)port
@@ -162,9 +163,32 @@ withFilterContext:(id)filterContext
 - (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag
 {
     NSLog(@"socket:%p didReadData:withTag:%ld", sock, tag);
+    NSString *ip = [sock connectedHost];
     
-    cmdResult = data;
-//    
+    uint16_t port = [sock connectedPort];
+    int length = [data length];
+    Byte arrayBytes[length-8];
+    Byte *testByte = (Byte *)[data bytes];
+    for(int i=4;i<length-4;i++)
+    {
+        printf("%#x ",testByte[i]);
+        //        if (i!=0||i!=1||i!=length-1||i!=length-2) {
+        arrayBytes[i-4]=testByte[i];
+        //        }
+    }
+    NSData *rdata = [[NSData alloc] initWithBytes:arrayBytes length:length-8];
+    cmdResult = rdata;
+//    printf("\n");
+    NSString *s = [[NSString alloc]initWithData:rdata encoding:NSUTF8StringEncoding];
+//    NSCharacterSet *whitespace = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+//    s = [s stringByTrimmingCharactersInSet:whitespace];
+    NSLog(@"%@",s);
+//    cmdResult = [s dataUsingEncoding:NSUTF8StringEncoding];
+    
+//    id jsonObject = [NSJSONSerialization JSONObjectWithData:rdata options:NSJSONReadingMutableContainers error:nil];
+//    BOOL rs = [jsonObject isKindOfClass:[NSDictionary class]];
+    NSLog(@"_______");
+//
 //    NSString *s = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
     
 //    UIAlertView* av=[[UIAlertView alloc]initWithTitle:@"接收数据" message:s delegate:nil cancelButtonTitle:@"OK"otherButtonTitles:nil,nil];
@@ -209,21 +233,23 @@ withFilterContext:(id)filterContext
     }
     else
     {
-        
-        tcpSocket = [[GCDAsyncSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
-        
-        if (![tcpSocket connectToHost:host onPort:port error:nil])
-        {
-            NSLog(@"tcp connecting: error");
-        }else {
-            NSLog(@"tcp connecting......");
-        }
 
     }
     
     
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:@"true"];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+-(void) connectTcp {
+    tcpSocket = [[GCDAsyncSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
+    
+    if (![tcpSocket connectToHost:host onPort:port error:nil])
+    {
+        NSLog(@"tcp connecting: error");
+    }else {
+        NSLog(@"tcp connecting......");
+    }
 }
 
 //readNetConfig //读取网络配置参数
@@ -234,53 +260,65 @@ withFilterContext:(id)filterContext
     //        NSLog(@"Error binding: %@", error);
     //        //return;
     //    }
-    Byte bytes[] = {0xAE,0xD0,0x06,0x49,0x01,0xca};
-    cmdType = bytes[3];
-    NSLog(@"cmdType======%#x",cmdType);
-    //    NSLog(@"%d",bytes[5]);
-    [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
-    //    NSLog(@"%d",bytes[5]);
-    NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
-    //     NSLog(@"readNetConfig,host=%@,port=%d",host,port);
-    //    command = command;
-    [gcdUdpSocket sendData:data toHost:@"255.255.255.255" port:port withTimeout:-1 tag:tag];
-    //    [self returnResult:command sendBytes:bytes];
-    [self.commandDelegate runInBackground:^{
-        NSString* result = nil;
-        NSString* key = nil;
-        long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
-        NSLog(@"cmdType=%#x",cmdType);
-        while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=timeout) {
-            if (cmdResult!=nil) {
-                Byte *returnByte = (Byte *)[cmdResult bytes];
-                //            NSLog(@"handler type=%#x\n",cmdType);
-                if (cmdType == returnByte[3]) {
-                    key = [NSString stringWithFormat:@"%d-%d-%d-%d",[self byte2ToInt:returnByte[5] twoParam:returnByte[6]],returnByte[7],returnByte[8],[self byte2ToInt:returnByte[9] twoParam:returnByte[10]]];
-                    result = [NSString stringWithFormat:@"{\"projectNo\":%d,\"buildingNo\":%d,\"unitNo\":%d,\"houseNo\":%d,\"localAddress\":\"%d.%d.%d.%d\",\"localPort\":%d,\"netWork\":\"%d.%d.%d.%d\",\"gateway\":\"%d.%d.%d.%d\",\"webAddress\":\"%d.%d.%d.%d\",\"webPort\":%d,\"udid\":\"%@\"}",[self byte2ToInt:returnByte[5] twoParam:returnByte[6]],returnByte[7],returnByte[8],[self byte2ToInt:returnByte[9] twoParam:returnByte[10]],returnByte[11],returnByte[12],returnByte[13],returnByte[14],
-                              [self byte2ToInt:returnByte[15] twoParam:returnByte[16]],
-                              returnByte[17],returnByte[18],returnByte[19],returnByte[20],
-                              returnByte[21],returnByte[22],returnByte[23],returnByte[24],
-                              returnByte[25],returnByte[26],returnByte[27],returnByte[28],
-                              [self byte2ToInt:returnByte[29] twoParam:returnByte[30]],
-                              [JmaxAppPlugin getmd5WithString:key]
-                              ];
-                    break;
+    
+    if (gateType==0) {
+        Byte bytes[] = {0xAE,0xD0,0x06,0x49,0x01,0xca};
+        cmdType = bytes[3];
+        NSLog(@"cmdType======%#x",cmdType);
+        //    NSLog(@"%d",bytes[5]);
+        [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
+        //    NSLog(@"%d",bytes[5]);
+        NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
+        //     NSLog(@"readNetConfig,host=%@,port=%d",host,port);
+        //    command = command;
+        [gcdUdpSocket sendData:data toHost:@"255.255.255.255" port:port withTimeout:-1 tag:tag];
+        //    [self returnResult:command sendBytes:bytes];
+        [self.commandDelegate runInBackground:^{
+            NSString* result = nil;
+            NSString* key = nil;
+            long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
+            NSLog(@"cmdType=%#x",cmdType);
+            while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=timeout) {
+                if (cmdResult!=nil) {
+                    Byte *returnByte = (Byte *)[cmdResult bytes];
+                    //            NSLog(@"handler type=%#x\n",cmdType);
+                    if (cmdType == returnByte[3]) {
+                        key = [NSString stringWithFormat:@"%d-%d-%d-%d",[self byte2ToInt:returnByte[5] twoParam:returnByte[6]],returnByte[7],returnByte[8],[self byte2ToInt:returnByte[9] twoParam:returnByte[10]]];
+                        result = [NSString stringWithFormat:@"{\"projectNo\":%d,\"buildingNo\":%d,\"unitNo\":%d,\"houseNo\":%d,\"localAddress\":\"%d.%d.%d.%d\",\"localPort\":%d,\"netWork\":\"%d.%d.%d.%d\",\"gateway\":\"%d.%d.%d.%d\",\"webAddress\":\"%d.%d.%d.%d\",\"webPort\":%d,\"udid\":\"%@\"}",[self byte2ToInt:returnByte[5] twoParam:returnByte[6]],returnByte[7],returnByte[8],[self byte2ToInt:returnByte[9] twoParam:returnByte[10]],returnByte[11],returnByte[12],returnByte[13],returnByte[14],
+                                  [self byte2ToInt:returnByte[15] twoParam:returnByte[16]],
+                                  returnByte[17],returnByte[18],returnByte[19],returnByte[20],
+                                  returnByte[21],returnByte[22],returnByte[23],returnByte[24],
+                                  returnByte[25],returnByte[26],returnByte[27],returnByte[28],
+                                  [self byte2ToInt:returnByte[29] twoParam:returnByte[30]],
+                                  [JmaxAppPlugin getmd5WithString:key]
+                                  ];
+                        break;
+                    }
+                }else {
+                    result = @"";
                 }
-            }else {
-                result = @"";
+                
             }
-            
-        }
-        cmdResult = nil;
-        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:result];
-        //    NSLog(@"ok");
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    }];
+            cmdResult = nil;
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:result];
+            //    NSLog(@"ok");
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        }];
+    }else {
+        [self connectTcp];
+        tcpCmdType = @"readNet";
+        NSData *requestData = [TcpCommand getReadNetCmd:SEND_TAG++];
+        [self sendTcpData:requestData];
+        [self returnTcpResult:command tag:SEND_TAG];
+    }
+    
     
     
 }
 /////////tcp send
 -(void)sendTcpData:(NSData*)data {
+    NSString *s = [[NSString alloc]initWithData:data encoding:NSUTF8StringEncoding];
+    NSLog(@"send content=%@",s);
     int length = data.length+8;
     Byte bytes[length];
     bytes[0] = 0x5A;
@@ -314,7 +352,34 @@ withFilterContext:(id)filterContext
         long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
         while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=timeout) {
             if (cmdResult!=nil) {
-              result = @"true";
+                id jsonObject = [NSJSONSerialization JSONObjectWithData:cmdResult options:NSJSONReadingMutableContainers error:nil];
+                BOOL rs = [jsonObject isKindOfClass:[NSDictionary class]];
+                if ([@"readNet" isEqualToString:tcpCmdType]) {
+//                    {"localIP":"192.168.1.120","localPort":3000,"gateway":"192.168.1.1","netmask":"255.255.255.0","serverIP":"121.43.226.8","serverPort":15999,"result":"ok","devSN":"1-123-456-120","flag":0}
+//                    result = [[NSString alloc]initWithData:cmdResult encoding:NSUTF8StringEncoding];
+//                    NSString *s = [[NSString alloc]initWithData:cmdResult encoding:NSUTF8StringEncoding];
+//                    NSLog(@"-------%@",s);
+                    if (rs) {
+                        NSDictionary *jsonDictionary = (NSDictionary*)jsonObject;
+                        result = [NSString stringWithFormat:@"{\"projectNo\":0,\"buildingNo\":0,\"unitNo\":0,\"houseNo\":0,\"localAddress\":\"%@\",\"localPort\":%@,\"netWork\":\"%@\",\"gateway\":\"%@\",\"webAddress\":\"%@\",\"webPort\":%@,\"udid\":\"%@\"}",[jsonDictionary valueForKey:@"localIP"],[jsonDictionary valueForKey:@"localPort"],[jsonDictionary valueForKey:@"netmask"],[jsonDictionary valueForKey:@"gateway"],
+                                  [jsonDictionary valueForKey:@"serverIP"],
+                                  [jsonDictionary valueForKey:@"serverPort"],
+                                  [JmaxAppPlugin getmd5WithString:[jsonDictionary valueForKey:@"devSN"]]
+                                  ];
+                    }
+                    
+                }else if([@"readDevList" isEqualToString:tcpCmdType]){
+                    //read dev status
+
+                }
+                else{
+//                    {"result":"no","devSN":"1-123-456-120","flag":15}
+                    if (rs) {
+                        NSDictionary *jsonDictionary = (NSDictionary*)jsonObject;
+                        result = [@"ok" isEqualToString:[jsonDictionary valueForKey:@"result"]]?@"true":@"false";
+                    }
+                }
+              
             }else {
               result = @"false";
             }
@@ -340,6 +405,8 @@ withFilterContext:(id)filterContext
     }
     else
     {
+        [self connectTcp];
+        tcpCmdType = @"ctrlScene";
         NSData *requestData = [TcpCommand getCtrlSceneCmd:SEND_TAG++ sceneNo:[[command.arguments objectAtIndex:2] intValue]];
         [self sendTcpData:requestData];
         [self returnTcpResult:command tag:SEND_TAG];
@@ -349,44 +416,54 @@ withFilterContext:(id)filterContext
 
 //灯光控制
 -(void) controlLight:(CDVInvokedUrlCommand *)command {
-    Byte bytes[] = {0xAE,0xD0,0x09,0x02,0x01,0x00,0x00,0x01,0x01};
-    cmdType = bytes[3];
-    //    int localPort = [(NSNumber *)[command.arguments objectAtIndex:2] intValue];
-    bytes[5] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:2] intValue];
-    bytes[6] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:3] intValue];
-    bytes[7] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:4] intValue];
-    [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
-    NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
-    [gcdUdpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
-    //    NSLog(@"controlLight,host=%@,port=%d",host,port);
-    //        for(int i=0;i<[data length];i++)
-    //            printf("%#x ",bytes[i]);
-    //        printf("\n");
-    Byte actionType = bytes[7];
-    [self.commandDelegate runInBackground:^{
-        NSString* result = nil;
-        long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
-        NSLog(@"cmdType=%#x",cmdType);
-        while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=timeout) {
-            if (cmdResult!=nil) {
-                Byte *returnByte = (Byte *)[cmdResult bytes];
-                //            NSLog(@"handler type=%#x\n",cmdType);
-                if (cmdType == returnByte[3]) {
-                    result = @"true";
-                    break;
+    if (gateType==0) {
+        Byte bytes[] = {0xAE,0xD0,0x09,0x02,0x01,0x00,0x00,0x01,0x01};
+        cmdType = bytes[3];
+        //    int localPort = [(NSNumber *)[command.arguments objectAtIndex:2] intValue];
+        bytes[5] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:2] intValue];
+        bytes[6] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:3] intValue];
+        bytes[7] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:4] intValue];
+        [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
+        NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
+        [gcdUdpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
+        //    NSLog(@"controlLight,host=%@,port=%d",host,port);
+        //        for(int i=0;i<[data length];i++)
+        //            printf("%#x ",bytes[i]);
+        //        printf("\n");
+        Byte actionType = bytes[7];
+        [self.commandDelegate runInBackground:^{
+            NSString* result = nil;
+            long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
+            NSLog(@"cmdType=%#x",cmdType);
+            while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=timeout) {
+                if (cmdResult!=nil) {
+                    Byte *returnByte = (Byte *)[cmdResult bytes];
+                    //            NSLog(@"handler type=%#x\n",cmdType);
+                    if (cmdType == returnByte[3]) {
+                        result = @"true";
+                        break;
+                    }else {
+                        result = @"false";
+                    }
                 }else {
                     result = @"false";
                 }
-            }else {
-                result = @"false";
+                
             }
-            
-        }
-        cmdResult = nil;
-        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:result];
-        //    NSLog(@"ok");
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    }];
+            cmdResult = nil;
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:result];
+            //    NSLog(@"ok");
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        }];
+    }else
+    {
+        [self connectTcp];
+        tcpCmdType = @"ctrlLight";
+        NSData *requestData = [TcpCommand getCtrlLightCmd:SEND_TAG++ areaNo:[[command.arguments objectAtIndex:2] intValue] devNo:[[command.arguments objectAtIndex:3] intValue] status:[[command.arguments objectAtIndex:4] intValue]];
+        [self sendTcpData:requestData];
+        [self returnTcpResult:command tag:SEND_TAG];
+    }
+   
 }
 //灯光状态读取
 -(void) readLightStatus:(CDVInvokedUrlCommand *)command {
@@ -452,38 +529,49 @@ withFilterContext:(id)filterContext
 }
 //窗帘控制
 -(void) controlCurtain:(CDVInvokedUrlCommand *)command {
-    Byte bytes[] = {0xAE,0xD0,0x09,0x03,0x01,0x00,0x00,0x01,0x00};
-    cmdType = bytes[3];
-    bytes[5] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:2] intValue];
-    bytes[6] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:3] intValue];
-    bytes[7] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:4] intValue];
-    [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
-    NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
-    [gcdUdpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
-    Byte actionType = bytes[7];
-    [self.commandDelegate runInBackground:^{
-        NSString* result = nil;
-        long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
-        NSLog(@"cmdType=%#x",cmdType);
-        while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=timeout) {
-            if (cmdResult!=nil) {
-                Byte *returnByte = (Byte *)[cmdResult bytes];
-                //            NSLog(@"handler type=%#x\n",cmdType);
-                if (cmdType == returnByte[3]) {
-                    result = @"true";
-                    break;
+    if (gateType==0) {
+        Byte bytes[] = {0xAE,0xD0,0x09,0x03,0x01,0x00,0x00,0x01,0x00};
+        cmdType = bytes[3];
+        bytes[5] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:2] intValue];
+        bytes[6] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:3] intValue];
+        bytes[7] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:4] intValue];
+        [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
+        NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
+        [gcdUdpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
+        Byte actionType = bytes[7];
+        [self.commandDelegate runInBackground:^{
+            NSString* result = nil;
+            long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
+            NSLog(@"cmdType=%#x",cmdType);
+            while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=timeout) {
+                if (cmdResult!=nil) {
+                    Byte *returnByte = (Byte *)[cmdResult bytes];
+                    //            NSLog(@"handler type=%#x\n",cmdType);
+                    if (cmdType == returnByte[3]) {
+                        result = @"true";
+                        break;
+                    }else {
+                        result = @"false";
+                    }
                 }else {
                     result = @"false";
                 }
-            }else {
-                result = @"false";
             }
-        }
-        cmdResult = nil;
-        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:result];
-        //    NSLog(@"ok");
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    }];
+            cmdResult = nil;
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:result];
+            //    NSLog(@"ok");
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        }];
+    }
+    else
+    {
+        [self connectTcp];
+        tcpCmdType = @"ctrlCurtain";
+        NSData *requestData = [TcpCommand getCtrlCurtainCmd:SEND_TAG++ areaNo:[[command.arguments objectAtIndex:2] intValue] devNo:[[command.arguments objectAtIndex:3] intValue] status:[[command.arguments objectAtIndex:4] intValue]];
+        [self sendTcpData:requestData];
+        [self returnTcpResult:command tag:SEND_TAG];
+    }
+    
 }
 //窗帘状态读取
 -(void) readCurtainStatus:(CDVInvokedUrlCommand *)command {
@@ -1170,63 +1258,93 @@ withFilterContext:(id)filterContext
     //used
     //0:ip 1:port 2:data
     //设备类型,区域id,设备id,读取类型;设备类型,区域id,设备id,读取类型;
-    NSString* result = @"[";
-    NSString *data = [command.arguments objectAtIndex:2];
-    NSArray *array = [data componentsSeparatedByString:@";"];
-    NSLog(data);
-    NSString* rs = @"";
-    int count = [array count]-1;//减少调用次数
-    if(count>0) {
-        //read device status;
-        cmdType=0xff;
-        readDeviceStatusArray = [NSMutableArray arrayWithCapacity:0];
-        for(int i=0; i<count; i++){
-            
-            if (![JmaxAppPlugin isBlankString:[array objectAtIndex:i]]) {
-                 [NSThread sleepForTimeInterval:0.1];
-                //                NSLog(@"%i-%@", i, [array objectAtIndex:i]);
-                //not blank
-                NSArray *oneArray =  [[array objectAtIndex:i]componentsSeparatedByString:@","];
-                int deviceType = [[oneArray objectAtIndex:0] intValue];
-                //0：灯光；1：窗帘；2：开关；3：红外设备；4：中央空调；5：门锁；6:电视；7：红外空调
-                //                NSLog(@"deviceType=%d",deviceType);
-                switch(deviceType) {
-                    case 0:
-                    rs = [self readLightStatus:[[oneArray objectAtIndex:1] intValue] secondDeviceNo:[[oneArray objectAtIndex:2] intValue]];
-                    result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"0\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2],rs]];
-                    break;
-                    case 1:
-                    rs = [self readCurtainStatus:[[oneArray objectAtIndex:1] intValue] secondDeviceNo:[[oneArray objectAtIndex:2] intValue]];
-                    result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"1\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2],rs]];
-                    break;
-                    case 2:
-                    rs = [self readSwitchStatus:[[oneArray objectAtIndex:1] intValue] secondDeviceNo:[[oneArray objectAtIndex:2] intValue] action:0x01];
-                    result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"2\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":{\"result\":%@,\"hz\":0.0,\"vmp\":0.0,\"ma\":0.0,\"pf\":0.0,\"ac\":0.0,\"ap\":0.0,\"checkHz\":0,\"checkVmp\":0,\"checkMa\":0,\"checkPf\":0,\"checkAc\":0}},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2],rs]];
-                    break;
-                    case 4:
-                    rs = [self readAirStatus:[[oneArray objectAtIndex:1] intValue] secondDeviceNo:[[oneArray objectAtIndex:2] intValue]];
-                    result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"4\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":{\"mode\":0,\"speed\":0,\"temp\":0,\"action\":-2}},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]]];
-                    break;
-                    case 5:
-                    rs = [self readDoorLock:[[oneArray objectAtIndex:1] intValue] secondDeviceNo:[[oneArray objectAtIndex:2] intValue]];
-                    result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"5\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2],rs]];
+    if (gateType==0) {
+        NSString* result = @"[";
+        NSString *data = [command.arguments objectAtIndex:2];
+        NSArray *array = [data componentsSeparatedByString:@";"];
+        NSLog(data);
+        NSString* rs = @"";
+        int count = [array count]-1;//减少调用次数
+        if(count>0) {
+            //read device status;
+            cmdType=0xff;
+            readDeviceStatusArray = [NSMutableArray arrayWithCapacity:0];
+            for(int i=0; i<count; i++){
+                
+                if (![JmaxAppPlugin isBlankString:[array objectAtIndex:i]]) {
+                    [NSThread sleepForTimeInterval:0.1];
+                    //                NSLog(@"%i-%@", i, [array objectAtIndex:i]);
+                    //not blank
+                    NSArray *oneArray =  [[array objectAtIndex:i]componentsSeparatedByString:@","];
+                    int deviceType = [[oneArray objectAtIndex:0] intValue];
+                    //0：灯光；1：窗帘；2：开关；3：红外设备；4：中央空调；5：门锁；6:电视；7：红外空调
+                    //                NSLog(@"deviceType=%d",deviceType);
+                    switch(deviceType) {
+                        case 0:
+                            rs = [self readLightStatus:[[oneArray objectAtIndex:1] intValue] secondDeviceNo:[[oneArray objectAtIndex:2] intValue]];
+                            result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"0\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2],rs]];
+                            break;
+                        case 1:
+                            rs = [self readCurtainStatus:[[oneArray objectAtIndex:1] intValue] secondDeviceNo:[[oneArray objectAtIndex:2] intValue]];
+                            result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"1\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2],rs]];
+                            break;
+                        case 2:
+                            rs = [self readSwitchStatus:[[oneArray objectAtIndex:1] intValue] secondDeviceNo:[[oneArray objectAtIndex:2] intValue] action:0x01];
+                            result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"2\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":{\"result\":%@,\"hz\":0.0,\"vmp\":0.0,\"ma\":0.0,\"pf\":0.0,\"ac\":0.0,\"ap\":0.0,\"checkHz\":0,\"checkVmp\":0,\"checkMa\":0,\"checkPf\":0,\"checkAc\":0}},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2],rs]];
+                            break;
+                        case 4:
+                            rs = [self readAirStatus:[[oneArray objectAtIndex:1] intValue] secondDeviceNo:[[oneArray objectAtIndex:2] intValue]];
+                            result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"4\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":{\"mode\":0,\"speed\":0,\"temp\":0,\"action\":-2}},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]]];
+                            break;
+                        case 5:
+                            rs = [self readDoorLock:[[oneArray objectAtIndex:1] intValue] secondDeviceNo:[[oneArray objectAtIndex:2] intValue]];
+                            result = [result stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"5\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2],rs]];
+                            break;
+                    }
+                }
+                
+            }
+        }
+        result = [result substringToIndex:[result length]-1];
+        result = [result stringByAppendingString:@"]"];
+        
+        [self.commandDelegate runInBackground:^{
+            //        NSLog(@"readDeviceStatusArray size=%d",[readDeviceStatusArray count]);
+            long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
+            NSLog(@"cmdType=%#x",cmdType);
+            NSString* rs = nil;
+            while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=4000) {
+                if ([readDeviceStatusArray count]==count) {
+                    NSLog(@"readDeviceStatusArray size=%d",[readDeviceStatusArray count]);
+                    rs = @"[";
+                    for (NSData *data in readDeviceStatusArray) {
+                        Byte *testByte = (Byte *)[data bytes];
+                        switch(testByte[3]) {
+                            case 0x82:
+                                rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"0\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":%d},",testByte[11],testByte[12],testByte[13]]];
+                                break;
+                            case 0x83:
+                                rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"1\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":%d},",testByte[11],testByte[12],testByte[13]]];
+                                break;
+                            case 0x86:
+                                rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"2\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":{\"result\":%d,\"hz\":0.0,\"vmp\":0.0,\"ma\":0.0,\"pf\":0.0,\"ac\":0.0,\"ap\":0.0,\"checkHz\":0,\"checkVmp\":0,\"checkMa\":0,\"checkPf\":0,\"checkAc\":0}},",testByte[11],testByte[12],testByte[13]]];
+                                break;
+                                rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"4\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":{\"mode\":%d,\"speed\":%d,\"temp\":%d,\"action\":%d}},",testByte[11],testByte[12],testByte[14],testByte[15],testByte[16],testByte[13]]];
+                                break;
+                            case 0x88:
+                                rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"5\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":%d},",testByte[11],testByte[12],testByte[13]]];
+                                break;
+                        }
+                    }
+                    rs = [rs substringToIndex:[rs length]-1];
+                    rs = [rs stringByAppendingString:@"]"];
                     break;
                 }
+                
             }
             
-        }
-    }
-    result = [result substringToIndex:[result length]-1];
-    result = [result stringByAppendingString:@"]"];
-    
-    [self.commandDelegate runInBackground:^{
-//        NSLog(@"readDeviceStatusArray size=%d",[readDeviceStatusArray count]);
-        long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
-        NSLog(@"cmdType=%#x",cmdType);
-        NSString* rs = nil;
-        while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=4000) {
-            if ([readDeviceStatusArray count]==count) {
-                NSLog(@"readDeviceStatusArray size=%d",[readDeviceStatusArray count]);
+            if ([readDeviceStatusArray count]!=count&&[readDeviceStatusArray count]>0) {
+                NSLog(@"not all readDeviceStatusArray size=%d",[readDeviceStatusArray count]);
                 rs = @"[";
                 for (NSData *data in readDeviceStatusArray) {
                     Byte *testByte = (Byte *)[data bytes];
@@ -1240,7 +1358,8 @@ withFilterContext:(id)filterContext
                         case 0x86:
                             rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"2\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":{\"result\":%d,\"hz\":0.0,\"vmp\":0.0,\"ma\":0.0,\"pf\":0.0,\"ac\":0.0,\"ap\":0.0,\"checkHz\":0,\"checkVmp\":0,\"checkMa\":0,\"checkPf\":0,\"checkAc\":0}},",testByte[11],testByte[12],testByte[13]]];
                             break;
-                        rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"4\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":{\"mode\":%d,\"speed\":%d,\"temp\":%d,\"action\":%d}},",testByte[11],testByte[12],testByte[14],testByte[15],testByte[16],testByte[13]]];
+                        case 0x84:
+                            rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"4\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":{\"mode\":%d,\"speed\":%d,\"temp\":%d,\"action\":%d}},",testByte[11],testByte[12],testByte[14],testByte[15],testByte[16],testByte[13]]];
                             break;
                         case 0x88:
                             rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"5\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":%d},",testByte[11],testByte[12],testByte[13]]];
@@ -1249,42 +1368,39 @@ withFilterContext:(id)filterContext
                 }
                 rs = [rs substringToIndex:[rs length]-1];
                 rs = [rs stringByAppendingString:@"]"];
-                break;
             }
             
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:rs==nil?result:rs];
+//            NSLog(rs);
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        }];
+    }
+    else
+    {
+        // //设备类型,区域id,设备id,读取类型;设备类型,区域id,设备id,读取类型;
+        NSString *data = [command.arguments objectAtIndex:2];
+        NSArray *array = [data componentsSeparatedByString:@";"];
+        NSLog(data);
+        int count = [array count]-1;//减少调用次数
+        if(count>0) {
+            
+            [self connectTcp];
+            tcpCmdType=@"readDevList";
+            NSData *requestData = [TcpCommand getReadDevListCmd:SEND_TAG++ devArray:array];
+            [self sendTcpData:requestData];
+            [self returnTcpResult:command tag:SEND_TAG];
+            
+//            readDeviceStatusArray = [NSMutableArray arrayWithCapacity:0];
+//            for(int i=0; i<count; i++){
+//                if (![JmaxAppPlugin isBlankString:[array objectAtIndex:i]]) {
+//                    NSArray *oneArray =  [[array objectAtIndex:i]componentsSeparatedByString:@","];
+//                    int deviceType = [[oneArray objectAtIndex:0] intValue];
+//                    //0：灯光；1：窗帘；2：开关；3：红外设备；4：中央空调；5：门锁；6:电视；7：红外空调
+//                }
+//            }
         }
-        
-        if ([readDeviceStatusArray count]!=count&&[readDeviceStatusArray count]>0) {
-            NSLog(@"not all readDeviceStatusArray size=%d",[readDeviceStatusArray count]);
-            rs = @"[";
-            for (NSData *data in readDeviceStatusArray) {
-                Byte *testByte = (Byte *)[data bytes];
-                switch(testByte[3]) {
-                    case 0x82:
-                    rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"0\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":%d},",testByte[11],testByte[12],testByte[13]]];
-                    break;
-                    case 0x83:
-                    rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"1\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":%d},",testByte[11],testByte[12],testByte[13]]];
-                    break;
-                    case 0x86:
-                    rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"2\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":{\"result\":%d,\"hz\":0.0,\"vmp\":0.0,\"ma\":0.0,\"pf\":0.0,\"ac\":0.0,\"ap\":0.0,\"checkHz\":0,\"checkVmp\":0,\"checkMa\":0,\"checkPf\":0,\"checkAc\":0}},",testByte[11],testByte[12],testByte[13]]];
-                    break;
-                    case 0x84:
-                    rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"4\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":{\"mode\":%d,\"speed\":%d,\"temp\":%d,\"action\":%d}},",testByte[11],testByte[12],testByte[14],testByte[15],testByte[16],testByte[13]]];
-                    break;
-                    case 0x88:
-                    rs = [rs stringByAppendingString:[NSString stringWithFormat:@"{\"deviceType\":\"5\",\"roomZoneNo\":%d,\"deviceNo\":%d,\"obj\":%d},",testByte[11],testByte[12],testByte[13]]];
-                    break;
-                }
-            }
-            rs = [rs substringToIndex:[rs length]-1];
-            rs = [rs stringByAppendingString:@"]"];
-        }
-        
-        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:rs==nil?result:rs];
-        NSLog(rs);
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    }];
+    }
+    
 }
 //获取本地地址
 -(void) getLocalAddr:(CDVInvokedUrlCommand *)command {
