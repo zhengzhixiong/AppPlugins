@@ -41,6 +41,12 @@
 -(void) controlAir:(CDVInvokedUrlCommand *)command;
 //中央空调状态
 -(void) readAirStatus:(CDVInvokedUrlCommand *)command;
+//新风控制
+-(void) controlFresh:(CDVInvokedUrlCommand *)command;
+//地暖控制
+-(void) controlFheat:(CDVInvokedUrlCommand *)command;
+//布防控制
+-(void) controlDef:(CDVInvokedUrlCommand *)command;
 //防区状态读取
 -(void) readDefenceStatus:(CDVInvokedUrlCommand *)command;
 //开关／电器控制

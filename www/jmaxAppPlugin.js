@@ -1,4 +1,4 @@
-var exec = require('cordova/exec');
+cordova.define("cordova-plugin-jmax.Jmax", function(require, exports, module) { var exec = require('cordova/exec');
 
 function JmaxAppPlugin() {}
 /** 
@@ -94,6 +94,39 @@ JmaxAppPlugin.prototype.readAirStatus = function(ip,port,areaNo,deviceNo,jsonObj
 		 }
 	 }, null, "JmaxAppPlugin", "readAirStatus", [ip,port,areaNo,deviceNo]);
 };
+//新风控制
+JmaxAppPlugin.prototype.controlFresh = function(ip,port,areaNo,deviceNo,action,mode,fan,jsonObj,callback) {
+        exec(function(rs){
+            if(callback) {
+                callback(rs,jsonObj);
+            }
+        }, null, "JmaxAppPlugin", "controlFresh", [ip,port,areaNo,deviceNo,action,mode,fan]);
+};
+//地暖控制
+JmaxAppPlugin.prototype.controlFheat = function(ip,port,areaNo,deviceNo,action,mode,temp,jsonObj,callback) {
+        exec(function(rs){
+            if(callback) {
+                callback(rs,jsonObj);
+            }
+        }, null, "JmaxAppPlugin", "controlFheat", [ip,port,areaNo,deviceNo,action,mode,temp]);
+};
+//音乐控制
+JmaxAppPlugin.prototype.controlMusic = function(ip,port,areaNo,deviceNo,status,play,item,volume,jsonObj,callback) {
+    exec(function(rs){
+        if(callback) {
+            callback(rs,jsonObj);
+        }
+    }, null, "JmaxAppPlugin", "controlMusic", [ip,port,areaNo,deviceNo,status,play,item,volume]);
+};
+//布防控制 devType=all bodySen gasSen doorSen IRSen waterSen
+JmaxAppPlugin.prototype.controlDef = function(ip,port,devType,deviceNo,enable,jsonObj,callback) {
+               exec(function(rs){
+                    if(callback) {
+                    callback(rs,jsonObj);
+                    }
+                    }, null, "JmaxAppPlugin", "controlMusic", [ip,port,devType,deviceNo,enable]);
+};
+
 
 //防区状态读取
 JmaxAppPlugin.prototype.readDefenceStatus = function(ip,port,areaNo,deviceNo,jsonObj,callback) {
@@ -132,12 +165,12 @@ JmaxAppPlugin.prototype.controlInfrared = function(ip,port,areaNo,deviceNo,actio
 };
 
 //门锁控制
-JmaxAppPlugin.prototype.controlDoorLock = function(ip,port,areaNo,deviceNo,actionType,jsonObj,callback) {
+JmaxAppPlugin.prototype.controlDoorLock = function(ip,port,areaNo,deviceNo,actionType,lockType,jsonObj,callback) {
 	exec(function(rs){ 
 		 if(callback) {
 			 callback(rs,jsonObj);
 		 }
-	 }, null, "JmaxAppPlugin", "controlDoorLock", [ip,port,areaNo,deviceNo,actionType]);
+	 }, null, "JmaxAppPlugin", "controlDoorLock", [ip,port,areaNo,deviceNo,actionType,lockType]);
 };
 
 //门锁状态读取
@@ -338,3 +371,4 @@ JmaxAppPlugin.prototype.setDoorPwd = function(ip,port,areaNo,deviceNo,pwd,jsonOb
 	 }, "JmaxAppPlugin", "setDoorPwd", [areaNo,deviceNo,pwd]);
 };
 module.exports = new JmaxAppPlugin();
+});
