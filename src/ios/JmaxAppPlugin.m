@@ -366,11 +366,21 @@ withFilterContext:(id)filterContext
                                   [jsonDictionary valueForKey:@"serverPort"],
                                   [JmaxAppPlugin getmd5WithString:[jsonDictionary valueForKey:@"devSN"]]
                                   ];
+                        break;
                     }
                     
                 }else if([@"readDevList" isEqualToString:tcpCmdType]){
-                    //read dev status
-
+                    //read dev status readDevList
+                    
+                    if (rs) {
+                        NSDictionary *jsonDictionary = (NSDictionary*)jsonObject;
+                        NSArray *devList = [jsonDictionary valueForKey:@"devList"];
+                        result = [TcpCommand getReadDevListResult:devList];
+                        NSLog(@"%@",result);
+                        break;
+                    }
+                    
+                    
                 }
                 else{
 //                    {"result":"no","devSN":"1-123-456-120","flag":15}

@@ -271,44 +271,44 @@
                 //                NSLog(@"deviceType=%d",deviceType);
                 switch(deviceType) {
                     case 0:
-                        rs = [NSString stringWithFormat:@"{\"deviceType\":\"light\",\"roomZoneNo\":%@,\"deviceNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]];
+                        rs = [NSString stringWithFormat:@"{\"devType\":\"light\",\"areaNo\":%@,\"devNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]];
 //                        [arry addObject:rs];
                         
                         break;
                     case 1:
-                        rs = [NSString stringWithFormat:@"{\"deviceType\":\"curtain\",\"roomZoneNo\":%@,\"deviceNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]];
+                        rs = [NSString stringWithFormat:@"{\"devType\":\"curtain\",\"areaNo\":%@,\"devNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]];
 //                        [arry addObject:rs];
                         break;
                     case 2:
-                        rs = [NSString stringWithFormat:@"{\"deviceType\":\"switch\",\"roomZoneNo\":%@,\"deviceNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]];
+                        rs = [NSString stringWithFormat:@"{\"devType\":\"switch\",\"areaNo\":%@,\"devNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]];
 //                        [arry addObject:rs];
                         break;
                     case 4:
-                        rs = [NSString stringWithFormat:@"{\"deviceType\":\"air\",\"roomZoneNo\":%@,\"deviceNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]];
+                        rs = [NSString stringWithFormat:@"{\"devType\":\"air\",\"areaNo\":%@,\"devNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]];
 //                        [arry addObject:rs];
                         break;
                     case 5:
-                        rs = [NSString stringWithFormat:@"{\"deviceType\":\"mlock\",\"roomZoneNo\":%@,\"deviceNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]];
+                        rs = [NSString stringWithFormat:@"{\"devType\":\"mlock\",\"areaNo\":%@,\"devNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]];
 //                        [arry addObject:rs];
                         break;
                     case 9:
-                        rs = [NSString stringWithFormat:@"{\"deviceType\":\"music\",\"roomZoneNo\":%@,\"deviceNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]];
+                        rs = [NSString stringWithFormat:@"{\"devType\":\"music\",\"areaNo\":%@,\"devNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]];
 //                        [arry addObject:rs];
                         break;
                     case 10:
-                        rs = [NSString stringWithFormat:@"{\"deviceType\":\"fresh\",\"roomZoneNo\":%@,\"deviceNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]];
+                        rs = [NSString stringWithFormat:@"{\"devType\":\"fresh\",\"areaNo\":%@,\"devNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]];
 //                        [arry addObject:rs];
                         break;
                     case 11:
-                        rs = [NSString stringWithFormat:@"{\"deviceType\":\"fheat\",\"roomZoneNo\":%@,\"deviceNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]];
+                        rs = [NSString stringWithFormat:@"{\"devType\":\"fheat\",\"areaNo\":%@,\"devNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]];
 //                        [arry addObject:rs];
                         break;
                     case 12:
-                        rs = [NSString stringWithFormat:@"{\"deviceType\":\"mlock\",\"roomZoneNo\":%@,\"deviceNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]];
+                        rs = [NSString stringWithFormat:@"{\"devType\":\"mlock\",\"areaNo\":%@,\"devNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]];
 //                        [arry addObject:rs];
                         break;
                     case 13:
-                        rs = [NSString stringWithFormat:@"{\"deviceType\":\"flock\",\"roomZoneNo\":%@,\"deviceNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]];
+                        rs = [NSString stringWithFormat:@"{\"devType\":\"flock\",\"areaNo\":%@,\"devNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2]];
 //                        [arry addObject:rs];
                         break;
                 }
@@ -341,6 +341,40 @@
     return requestData;
 }
 
++ (NSString *)getReadDevListResult:(NSArray *)resultArray
+{
+    //[{"deviceType":"0","roomZoneNo":1,"deviceNo":1,"obj":-2},{"deviceType":"1","roomZoneNo":1,"deviceNo":1,"obj":-2},{"deviceType":"2","roomZoneNo":1,"deviceNo":1,"obj":{"result":-2,"hz":0.0,"vmp":0.0,"ma":0.0,"pf":0.0,"ac":0.0,"ap":0.0,"checkHz":0,"checkVmp":0,"checkMa":0,"checkPf":0,"checkAc":0}},{"deviceType":"2","roomZoneNo":1,"deviceNo":1,"obj":{"result":-2,"hz":0.0,"vmp":0.0,"ma":0.0,"pf":0.0,"ac":0.0,"ap":0.0,"checkHz":0,"checkVmp":0,"checkMa":0,"checkPf":0,"checkAc":0}},{"deviceType":"4","roomZoneNo":1,"deviceNo":1,"obj":{"mode":0,"speed":0,"temp":0,"action":-2}},{"deviceType":"5","roomZoneNo":1,"deviceNo":1,"obj":-2}]
+    
+    //                    {"devList":[{"devType":"light","areaNo":0,"devNo":0,"status":0},{"devType":"light","areaNo":0,"devNo":1,"status":0},{"devType":"light","areaNo":0,"devNo":2,"status":0},{"devType":"curtain","areaNo":0,"devNo":0,"status":1}],"result":"ok","devSN":"1-123-456-120","flag":12345678}
+    NSMutableString *jsonStr = [[NSMutableString alloc] initWithString:@"["];
+    if (resultArray!=nil) {
+        for (int i=0; i< [resultArray count]; i++) {
+            NSDictionary *dictionary = [resultArray objectAtIndex:i];
+            NSString *deviceType = [dictionary valueForKey:@"devType"];
+            NSString *rs = @"";
+            if ([@"light" isEqualToString:deviceType]) {
+                rs = [NSString stringWithFormat:@"{\"deviceType\":\"0\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":%@},",[dictionary valueForKey:@"areaNo"],[dictionary valueForKey:@"devNo"],[dictionary valueForKey:@"status"]];
+            }
+            else if([@"curtain" isEqualToString:deviceType])
+            {
+                rs = [NSString stringWithFormat:@"{\"deviceType\":\"1\",\"roomZoneNo\":%@,\"deviceNo\":%@,\"obj\":%@},",[dictionary valueForKey:@"areaNo"],[dictionary valueForKey:@"devNo"],[dictionary valueForKey:@"status"]];
+            }
+                
+            [jsonStr appendString:rs];
+        }
+        NSUInteger location = [jsonStr length]-1;
+        NSRange range = NSMakeRange(location, 1);
+        [jsonStr replaceCharactersInRange:range withString:@"]"];
+        
+    }
+    else
+    {
+        [jsonStr appendString:@"]"];
+    }
+    
+    return jsonStr;
+    
+}
 
 + (NSData *)getSetSceneCmd:(long)flag devArray:(NSArray *)array
 {

@@ -10,6 +10,8 @@
 
 @interface TcpCommand : NSObject
 + (NSData *)getReadDevListCmd:(long)flag devArray:(NSArray *)devArray;
++ (NSString *)getReadDevListResult:(NSArray *)resultArray;
+
 + (NSData *)getSetSceneCmd:(long)flag devArray:(NSArray *)array;
 + (NSData *)getReadNetCmd:(long)flag;
 + (NSData *)getCtrlSceneCmd:(long)flag sceneNo:(int) sceneNo;
