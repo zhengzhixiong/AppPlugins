@@ -1,4 +1,4 @@
-cordova.define("cordova-plugin-jmax.Jmax", function(require, exports, module) { var exec = require('cordova/exec');
+var exec = require('cordova/exec');
 
 function JmaxAppPlugin() {}
 /** 
@@ -371,4 +371,3 @@ JmaxAppPlugin.prototype.setDoorPwd = function(ip,port,areaNo,deviceNo,pwd,jsonOb
 	 }, "JmaxAppPlugin", "setDoorPwd", [areaNo,deviceNo,pwd]);
 };
 module.exports = new JmaxAppPlugin();
-});
