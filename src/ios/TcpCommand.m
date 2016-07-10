@@ -102,9 +102,11 @@
 {
     NSMutableDictionary *dictionary = [[NSMutableDictionary alloc]init];
     [dictionary setValue:@"readDev" forKey:@"action"];
-    [dictionary setValue:@"switch" forKey:@"devType"];
+    [dictionary setValue:@"IR" forKey:@"devType"];
     [dictionary setValue:[NSNumber numberWithInteger:areaNo] forKey:@"areaNo"];
     [dictionary setValue:[NSNumber numberWithInteger:devNo] forKey:@"devNo"];
+    [dictionary setValue:[NSNumber numberWithInteger:iconNo] forKey:@"iconNo"];
+    [dictionary setValue:@"" forKey:@"data"];
     [dictionary setValue:[NSNumber numberWithInteger:flag] forKey:@"flag"];
     NSData *requestData = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:nil];
     return requestData;
@@ -132,6 +134,18 @@
     [dictionary setValue:[NSNumber numberWithInteger:flag] forKey:@"flag"];
     NSData *requestData = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:nil];
     return requestData;
+}
++ (NSData *)getSetLockPwdCmd:(long)flag areaNo:(int) areaNo devNo:(int) devNo lockType:(NSString *) lockType pwd:(NSString *)pwd
+{
+    NSMutableDictionary *dictionary = [[NSMutableDictionary alloc]init];
+    [dictionary setValue:@"setTempPwd" forKey:@"action"];
+    [dictionary setValue:[NSNumber numberWithInteger:devNo] forKey:@"devNo"];
+    [dictionary setValue:pwd forKey:@"password"];
+    [dictionary setValue:[NSNumber numberWithInteger:5] forKey:@"time"];
+    [dictionary setValue:[NSNumber numberWithInteger:flag] forKey:@"flag"];
+    NSData *requestData = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:nil];
+    return requestData;
+
 }
 
 + (NSData *)getReadDeteCmd:(long)flag areaNo:(int) areaNo devNo:(int) devNo deteType:(NSString *) deteType

@@ -24,6 +24,8 @@
 + (NSData *)getCtrlIRCmd:(long)flag areaNo:(int) areaNo devNo:(int) devNo iconNo:(int) iconNo;
 + (NSData *)getCtrlLockCmd:(long)flag areaNo:(int) areaNo devNo:(int) devNo status:(int) status lockType:(NSString *) lockType;
 + (NSData *)getReadLockCmd:(long)flag areaNo:(int) areaNo devNo:(int) devNo lockType:(NSString *) lockType;
+
++ (NSData *)getSetLockPwdCmd:(long)flag areaNo:(int) areaNo devNo:(int) devNo lockType:(NSString *) lockType pwd:(NSString *)pwd;
 //
 + (NSData *)getReadDeteCmd:(long)flag areaNo:(int) areaNo devNo:(int) devNo deteType:(NSString *) deteType;
 
@@ -37,5 +39,7 @@
 + (NSData *)getCtrlDefCmd:(long)flag devType:(NSString *) devType devNo:(int) devNo enable:(int) enable;
 
 + (NSData *)getSetBindCmd:(long)flag enable:(int) enable;
+
+
 
 @end

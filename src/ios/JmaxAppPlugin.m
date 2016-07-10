@@ -762,7 +762,24 @@ withFilterContext:(id)filterContext
     if (gateType==1) {
         [self connectTcp];
         tcpCmdType = @"ctrlDef";
-        NSData *requestData = [TcpCommand getCtrlDefCmd:SEND_TAG++ devType:[command.arguments objectAtIndex:2] devNo:[[command.arguments objectAtIndex:2] intValue] enable:[[command.arguments objectAtIndex:3] intValue]];
+        NSString *devType = @"all";
+        switch ([[command.arguments objectAtIndex:2] intValue]) {
+            case 14:
+                devType = @"gasSen";
+                break;
+            case 21:
+                devType = @"bodySen";
+                break;
+            case 15:
+                devType = @"doorSen";
+                break;
+            case 16:
+                devType = @"IRSen";
+                break;
+            default:
+                break;
+        }
+        NSData *requestData = [TcpCommand getCtrlDefCmd:SEND_TAG++ devType:devType devNo:[[command.arguments objectAtIndex:2] intValue] enable:[[command.arguments objectAtIndex:3] intValue]];
         [self sendTcpData:requestData];
         [self returnTcpResult:command tag:SEND_TAG];
     }
@@ -1003,7 +1020,8 @@ withFilterContext:(id)filterContext
     {
         [self connectTcp];
         tcpCmdType = @"ctrlLock";
-        NSData *requestData = [TcpCommand getCtrlLockCmd:SEND_TAG++ areaNo:[[command.arguments objectAtIndex:2] intValue] devNo:[[command.arguments objectAtIndex:3] intValue] status:[[command.arguments objectAtIndex:4] intValue] lockType: host = [command.arguments objectAtIndex:5]];
+        NSString *lockType = ([[command.arguments objectAtIndex:5] intValue]==12)?@"mlock":@"flock";
+        NSData *requestData = [TcpCommand getCtrlLockCmd:SEND_TAG++ areaNo:[[command.arguments objectAtIndex:2] intValue] devNo:[[command.arguments objectAtIndex:3] intValue] status:[[command.arguments objectAtIndex:4] intValue] lockType:lockType ];
         [self sendTcpData:requestData];
         [self returnTcpResult:command tag:SEND_TAG];
     }
@@ -1013,57 +1031,69 @@ withFilterContext:(id)filterContext
 //设置门锁临时密码
 -(void) setDoorPwd:(CDVInvokedUrlCommand *)command {
     NSString *pwd = [command.arguments objectAtIndex:2];
-    int pwdLength = [pwd length];
-    int lengt = pwdLength+9;
-    
-    Byte bytes[lengt];
-    
-    
-    bytes[0] = (Byte)0xAE;
-    bytes[1] = (Byte)0xD0;
-    //设置数据长度
-    bytes[2] = (Byte) (pwdLength+9);
-    
-    bytes[3] = (Byte)0x31;
-    bytes[4] = (Byte)0x01;
-    //设置区域号
-    bytes[5] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:0] intValue];
-    //设置设备号
-    bytes[6] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:1] intValue];
-    //设置时间
-    bytes[7] = (Byte)0x05;
-    cmdType = bytes[3];
-    //根据密码设置密码长度
-    for (int i = 0; i < pwdLength; i++) {
+    NSString *locktype = [command.arguments objectAtIndex:3];
+    if (gateType==0) {
+        int pwdLength = [pwd length];
+        int lengt = pwdLength+9;
         
-        bytes[8+i] = (Byte) [[pwd substringWithRange:NSMakeRange(i, 1)] intValue];
+        Byte bytes[lengt];
+        
+        
+        bytes[0] = (Byte)0xAE;
+        bytes[1] = (Byte)0xD0;
+        //设置数据长度
+        bytes[2] = (Byte) (pwdLength+9);
+        
+        bytes[3] = (Byte)0x31;
+        bytes[4] = (Byte)0x01;
+        //设置区域号
+        bytes[5] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:0] intValue];
+        //设置设备号
+        bytes[6] = (Byte)[(NSNumber *)[command.arguments objectAtIndex:1] intValue];
+        //设置时间
+        bytes[7] = (Byte)0x05;
+        cmdType = bytes[3];
+        //根据密码设置密码长度
+        for (int i = 0; i < pwdLength; i++) {
+            
+            bytes[8+i] = (Byte) [[pwd substringWithRange:NSMakeRange(i, 1)] intValue];
+        }
+        
+        
+        [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
+        
+        for(int i=0;i<sizeof(bytes);i++)
+            printf(" %#x ",bytes[i]);
+        
+        NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
+        [gcdUdpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
+        //    Byte actionType = bytes[7];
+        [self.commandDelegate runInBackground:^{
+            NSString* result = nil;
+            long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
+            NSLog(@"cmdType=%#x",cmdType);
+            while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=6000) {
+                if (cmdResult!=nil) {
+                    result = @"true";
+                }else {
+                    result = @"false";
+                }
+            }
+            cmdResult = nil;
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:result];
+            //    NSLog(@"ok");
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        }];
+    }
+    else
+    {
+        [self connectTcp];
+        tcpCmdType = @"setTempPwd";
+        NSData *requestData = [TcpCommand getSetLockPwdCmd:SEND_TAG++ areaNo:[[command.arguments objectAtIndex:0] intValue] devNo:[[command.arguments objectAtIndex:1] intValue] lockType:@"mlock" pwd:pwd];
+        [self sendTcpData:requestData];
+        [self returnTcpResult:command tag:SEND_TAG];
     }
     
-    
-    [JmaxAppPlugin getCheckByte:bytes sizeParam:sizeof(bytes)];
-    
-    for(int i=0;i<sizeof(bytes);i++)
-    printf(" %#x ",bytes[i]);
-    
-    NSData *data = [[NSData alloc] initWithBytes:bytes length:sizeof(bytes)];
-    [gcdUdpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
-//    Byte actionType = bytes[7];
-    [self.commandDelegate runInBackground:^{
-        NSString* result = nil;
-        long long beginTimestamp = [[NSDate date] timeIntervalSince1970] * 1000;
-        NSLog(@"cmdType=%#x",cmdType);
-        while ([[NSDate date] timeIntervalSince1970] * 1000-beginTimestamp<=6000) {
-            if (cmdResult!=nil) {
-                result = @"true";
-            }else {
-                result = @"false";
-            }
-        }
-        cmdResult = nil;
-        CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:result];
-        //    NSLog(@"ok");
-        [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-    }];
 }
 //门锁状态读取
 -(void) readDoorLock:(CDVInvokedUrlCommand *)command {

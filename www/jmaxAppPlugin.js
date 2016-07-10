@@ -124,7 +124,7 @@ JmaxAppPlugin.prototype.controlDef = function(ip,port,devType,deviceNo,enable,js
                     if(callback) {
                     callback(rs,jsonObj);
                     }
-                    }, null, "JmaxAppPlugin", "controlMusic", [ip,port,devType,deviceNo,enable]);
+                    }, null, "JmaxAppPlugin", "controlDef", [ip,port,devType,deviceNo,enable]);
 };
 
 
@@ -358,8 +358,8 @@ JmaxAppPlugin.prototype.getLocalAddr = function(callback) {
 	 }, null, "JmaxAppPlugin", "getLocalAddr", []);
 };
 
-//设置临时密码,pwd 是临时密码 长度6-10位（每位取0-9数字），操作成功返回true字符串，默认情况下，操作动作超时8秒
-JmaxAppPlugin.prototype.setDoorPwd = function(ip,port,areaNo,deviceNo,pwd,jsonObj,callback) {
+//设置临时密码,pwd 是临时密码 长度6-10位（每位取0-9数字），操作成功返回true字符串，默认情况下，操作动作超时8秒,lockType:mlock   flock
+JmaxAppPlugin.prototype.setDoorPwd = function(ip,port,areaNo,deviceNo,pwd,lockType,jsonObj,callback) {
 	exec(function(rs){ 
 		 if(callback) {
 			 callback(rs,jsonObj);
@@ -368,6 +368,6 @@ JmaxAppPlugin.prototype.setDoorPwd = function(ip,port,areaNo,deviceNo,pwd,jsonOb
 		 if(callback) {
 			 callback("false",jsonObj);
 		 }
-	 }, "JmaxAppPlugin", "setDoorPwd", [areaNo,deviceNo,pwd]);
+	 }, "JmaxAppPlugin", "setDoorPwd", [areaNo,deviceNo,pwd,lockType]);
 };
 module.exports = new JmaxAppPlugin();
