@@ -370,4 +370,76 @@ JmaxAppPlugin.prototype.setDoorPwd = function(ip,port,areaNo,deviceNo,pwd,lockTy
 		 }
 	 }, "JmaxAppPlugin", "setDoorPwd", [areaNo,deviceNo,pwd,lockType]);
 };
+
+/**
+ * 以下几个设置联动的，linkages组成方式： devType1,areaNo1,devNo1,status1;devType2,areaNo2,status2; 跟读取设备状态类似
+ * 如果是设置场景联动，那么devType=99；status=场景序号；
+ */
+
+/**
+ *  设备号、指纹编号、是否有效（0禁用，1启用），时间范围
+ *   deviceNo\fpNo\enable\timeRange\linkages
+ *
+ *
+ */
+JmaxAppPlugin.prototype.setFpLinkage = function(deviceNo,fpNo,enable,timeRange,linkages,jsonObj,callback) {
+    exec(function(rs){
+        if(callback) {
+            callback(rs,jsonObj);
+        }
+    }, function(error){
+        if(callback) {
+            callback("false",jsonObj);
+        }
+    }, "JmaxAppPlugin", "setFpLinkage", [deviceNo,fpNo,enable,timeRange,linkages]);
+};
+/**
+ * 参考指纹
+ * deviceNo\pwdNo\password\enable\timeRange\linkages
+ */
+JmaxAppPlugin.prototype.setPwdLinkage = function(deviceNo,pwdNo,passsword,enable,timeRange,linkages,jsonObj,callback) {
+    exec(function(rs){
+        if(callback) {
+            callback(rs,jsonObj);
+        }
+    }, function(error){
+        if(callback) {
+            callback("false",jsonObj);
+        }
+    }, "JmaxAppPlugin", "setPwdLinkage", [deviceNo,pwdNo,passsword,enable,timeRange,linkages]);
+};
+
+/**
+ * deviceNo\devType\linkages
+ */
+JmaxAppPlugin.prototype.setDefLinkage = function(deviceNo, devType, linkages,
+		jsonObj, callback) {
+	exec(function(rs) {
+		if (callback) {
+			callback(rs, jsonObj);
+		}
+	}, function(error) {
+		if (callback) {
+			callback("false", jsonObj);
+		}
+	}, "JmaxAppPlugin", "setDefLinkage", [ deviceNo, devType, linkages ]);
+};
+
+/**
+ * 定时序号、定时时间（格式2016-02-29 15:00）、禁用或启用，循环模式（字符串格式如："[1,2,3,4,5,6,7] ：1~7-周一至周日，若为[]则单次执行"）
+ * timerNo\time\enable\cycle
+ */
+JmaxAppPlugin.prototype.setTimerLinkage = function(timerNo, time, enable,
+		cycle, linkages, jsonObj, callback) {
+	exec(function(rs) {
+		if (callback) {
+			callback(rs, jsonObj);
+		}
+	}, function(error) {
+		if (callback) {
+			callback("false", jsonObj);
+		}
+	}, "JmaxAppPlugin", "setTimerLinkage", [ timerNo, time, enable, cycle,
+			linkages ]);
+};
 module.exports = new JmaxAppPlugin();

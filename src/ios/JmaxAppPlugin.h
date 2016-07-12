@@ -103,4 +103,9 @@
 +(NSString*)getmd5WithString:(NSString*)string;
 //check byte
 +(void)getCheckByte:(Byte[])bytes sizeParam:(int)size;
+//setFpLinkage
+-(void) setFpLinkage:(CDVInvokedUrlCommand *)command;
+-(void) setPwdLinkage:(CDVInvokedUrlCommand *)command;
+-(void) setDefLinkage:(CDVInvokedUrlCommand *)command;
+-(void) setTimerLinkage:(CDVInvokedUrlCommand *)command;
 @end

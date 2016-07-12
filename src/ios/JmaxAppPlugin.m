@@ -1544,6 +1544,75 @@ withFilterContext:(id)filterContext
     }
     
 }
+//deviceNo\fpNo\enable\timeRange\linkages
+-(void) setFpLinkage:(CDVInvokedUrlCommand *)command
+{
+    NSString *data = [command.arguments objectAtIndex:4];
+    NSArray *array = [data componentsSeparatedByString:@";"];
+    NSLog(data);
+    int count = [array count]-1;//减少调用次数
+    if(count>0) {
+        
+        [self connectTcp];
+        tcpCmdType=@"setFpLinkage";
+        NSData *requestData = [TcpCommand getSetFpLinkageCmd:SEND_TAG++ devNo:[[command.arguments objectAtIndex:0] intValue] fpNo:[[command.arguments objectAtIndex:1] intValue] enable:[[command.arguments objectAtIndex:2] intValue] timeRange:[command.arguments objectAtIndex:3] devArray:array];
+        [self sendTcpData:requestData];
+        [self returnTcpResult:command tag:SEND_TAG];
+        
+    }
+}
+//deviceNo\pwdNo\password\enable\timeRange\linkages
+-(void) setPwdLinkage:(CDVInvokedUrlCommand *)command
+{
+    NSString *data = [command.arguments objectAtIndex:5];
+    NSArray *array = [data componentsSeparatedByString:@";"];
+    NSLog(data);
+    int count = [array count]-1;//减少调用次数
+    if(count>0) {
+        
+        [self connectTcp];
+        tcpCmdType=@"setPwdLinkage";
+        NSData *requestData = [TcpCommand getSetPwdLinkageCmd:SEND_TAG++ devNo:[[command.arguments objectAtIndex:0] intValue] pwdNo:[[command.arguments objectAtIndex:1] intValue] password:[command.arguments objectAtIndex:2] enable:[[command.arguments objectAtIndex:3] intValue] timeRange:[command.arguments objectAtIndex:4] devArray:array];
+        [self sendTcpData:requestData];
+        [self returnTcpResult:command tag:SEND_TAG];
+        
+    }
+}
+-(void) setDefLinkage:(CDVInvokedUrlCommand *)command
+{
+    NSString *data = [command.arguments objectAtIndex:2];
+    NSArray *array = [data componentsSeparatedByString:@";"];
+    NSLog(data);
+    int count = [array count]-1;//减少调用次数
+    if(count>0) {
+        
+        [self connectTcp];
+        tcpCmdType=@"setDefLinkage";
+        NSData *requestData = [TcpCommand getSetDefLinkageCmd:SEND_TAG++ devNo:[[command.arguments objectAtIndex:0] intValue] devType:[[command.arguments objectAtIndex:1] intValue] devArray:array];
+        
+        [self sendTcpData:requestData];
+        [self returnTcpResult:command tag:SEND_TAG];
+        
+    }
+}
+-(void) setTimerLinkage:(CDVInvokedUrlCommand *)command
+{
+    NSString *data = [command.arguments objectAtIndex:5];
+    NSArray *array = [data componentsSeparatedByString:@";"];
+    NSLog(data);
+    int count = [array count]-1;//减少调用次数
+    if(count>0) {
+        
+        [self connectTcp];
+        tcpCmdType=@"setTimerLinkage";
+        NSData *requestData = [TcpCommand getSetTimerLinkageCmd:SEND_TAG++ timerNo:[[command.arguments objectAtIndex:0] intValue] time:[command.arguments objectAtIndex:1] enable:[[command.arguments objectAtIndex:2] intValue] cycle:[command.arguments objectAtIndex:3] devArray:array];
+        
+        [self sendTcpData:requestData];
+        [self returnTcpResult:command tag:SEND_TAG];
+        
+    }
+}
+
 //获取本地地址
 -(void) getLocalAddr:(CDVInvokedUrlCommand *)command {
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:[self getIPAddress]];

@@ -40,6 +40,13 @@
 
 + (NSData *)getSetBindCmd:(long)flag enable:(int) enable;
 
++ (NSData *)getSetFpLinkageCmd:(long)flag devNo:(int) devNo fpNo:(int) fpNo enable:(int) enable timeRange:(NSString *) timeRange devArray:(NSArray *)devArray;
+
++ (NSData *)getSetPwdLinkageCmd:(long)flag devNo:(int) devNo pwdNo:(int) pwdNo password:(NSString *)password enable:(int) enable timeRange:(NSString *) timeRange devArray:(NSArray *)devArray;
+
++ (NSData *)getSetDefLinkageCmd:(long)flag devNo:(int) devNo devType:(int) devType devArray:(NSArray *)devArray;
+
++ (NSData *)getSetTimerLinkageCmd:(long)flag timerNo:(int) timerNo time:(NSString *) time enable:(int) enable cycle:(NSString *)cycle devArray:(NSArray *)devArray;
 
 
 @end

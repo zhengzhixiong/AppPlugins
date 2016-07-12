@@ -456,4 +456,171 @@
     return requestData;
 }
 
++ (NSString *)getCtrlCmd:(NSArray *)oneArray
+{
+    //             devType1,areaNo1,devNo1,status1;devType2,areaNo2,status2;
+    NSString *rs;
+    int deviceType = [[oneArray objectAtIndex:0] intValue];
+    //0：灯光；1：窗帘；2：开关；3：红外设备；4：中央空调；5：门锁；6:电视；7：红外空调
+    switch(deviceType) {
+        case 0:
+        rs = [NSString stringWithFormat:@"{\"devType\":\"light\",\"action\":\"ctrlDev\",\"areaNo\":%@,\"devNo\":%@,\"status\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2],[oneArray objectAtIndex:3]];
+        break;
+        case 1:
+        rs = [NSString stringWithFormat:@"{\"devType\":\"curtain\",\"action\":\"ctrlDev\",\"areaNo\":%@,\"devNo\":%@,\"status\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2],[oneArray objectAtIndex:3]];
+        break;
+        case 2:
+        rs = [NSString stringWithFormat:@"{\"devType\":\"switch\",\"action\":\"ctrlDev\",\"areaNo\":%@,\"devNo\":%@,\"status\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2],[oneArray objectAtIndex:3]];
+        break;
+        case 4:
+        rs = [NSString stringWithFormat:@"{\"deviceType\":\"air\",\"roomZoneNo\":%@,\"deviceNo\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:3]];
+        break;
+        case 5:
+        rs = [NSString stringWithFormat:@"{\"devType\":\"mlock\",\"action\":\"ctrlDev\",\"devNo\":%@,\"status\":%@},",[oneArray objectAtIndex:2],[oneArray objectAtIndex:3]];
+        break;
+        case 9:
+        rs = [NSString stringWithFormat:@"{\"devType\":\"music\",\"action\":\"ctrlDev\",\"areaNo\":%@,\"devNo\":%@,\"status\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2],[oneArray objectAtIndex:3]];
+        break;
+        case 10:
+        rs = [NSString stringWithFormat:@"{\"devType\":\"fresh\",\"action\":\"ctrlDev\",\"areaNo\":%@,\"devNo\":%@,\"status\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2],[oneArray objectAtIndex:3]];
+        break;
+        case 11:
+        rs = [NSString stringWithFormat:@"{\"devType\":\"fheat\",\"action\":\"ctrlDev\",\"areaNo\":%@,\"devNo\":%@,\"status\":%@},",[oneArray objectAtIndex:1],[oneArray objectAtIndex:2],[oneArray objectAtIndex:3]];
+        break;
+        case 12:
+        rs = [NSString stringWithFormat:@"{\"devType\":\"mlock\",\"action\":\"ctrlDev\",\"devNo\":%@,\"status\":%@},",[oneArray objectAtIndex:2],[oneArray objectAtIndex:3]];
+        break;
+        case 13:
+        rs = [NSString stringWithFormat:@"{\"devType\":\"flock\",\"action\":\"ctrlDev\",\"devNo\":%@,\"status\":%@},",[oneArray objectAtIndex:2],[oneArray objectAtIndex:3]];
+        break;
+        case 99:
+        rs = [NSString stringWithFormat:@"{\"action\":\"ctrlScene\",\"sceneNo\":%@},",[oneArray objectAtIndex:3]];
+        break;
+    }
+    return rs;
+}
+
++ (NSData *)getSetFpLinkageCmd:(long)flag devNo:(int) devNo fpNo:(int) fpNo enable:(int) enable timeRange:(NSString *) timeRange devArray:(NSArray *)devArray
+{
+    NSString* rs = @"";
+    int count = [devArray count]-1;//减少调用次数
+    
+    NSString *jsonResult = [NSString stringWithFormat:@"{\"action\":\"setFp\",\"flag\":%ld,\"devNo\":%d,\"fpNo\":%d,\"enable\":%d,\"timeRange\":%@,\"linkage\":[",flag,devNo,fpNo,enable,timeRange];
+    
+    NSMutableString *jsonStr = [[NSMutableString alloc] initWithString:jsonResult];
+    if(count>0) {
+        for(int i=0; i<count; i++){
+            
+            if (![TcpCommand isBlankString:[devArray objectAtIndex:i]]) {
+                NSArray *oneArray =  [[devArray objectAtIndex:i]componentsSeparatedByString:@","];
+                rs = [self getCtrlCmd:oneArray];
+                [jsonStr appendString:rs];
+            }
+            
+        }
+        NSUInteger location = [jsonStr length]-1;
+        NSRange range = NSMakeRange(location, 1);
+        [jsonStr replaceCharactersInRange:range withString:@"]}"];
+        
+    }
+    else
+    {
+        [jsonStr appendString:@"]}"];
+    }
+    NSData *requestData = [jsonStr dataUsingEncoding:NSUTF8StringEncoding];
+    return requestData;
+}
++ (NSData *)getSetPwdLinkageCmd:(long)flag devNo:(int) devNo pwdNo:(int) pwdNo password:(NSString *)password enable:(int) enable timeRange:(NSString *) timeRange devArray:(NSArray *)devArray
+{
+    
+    NSString* rs = @"";
+    int count = [devArray count]-1;//减少调用次数
+    
+    NSString *jsonResult = [NSString stringWithFormat:@"{\"action\":\"setPwd\",\"flag\":%ld,\"devNo\":%d,\"pwdNo\":%d,\"password\":%@,\"enable\":%d,\"timeRange\":%@,\"linkage\":[",flag,devNo,pwdNo,password,enable,timeRange];
+    
+    NSMutableString *jsonStr = [[NSMutableString alloc] initWithString:jsonResult];
+    if(count>0) {
+        for(int i=0; i<count; i++){
+            
+            if (![TcpCommand isBlankString:[devArray objectAtIndex:i]]) {
+                NSArray *oneArray =  [[devArray objectAtIndex:i]componentsSeparatedByString:@","];
+                rs = [self getCtrlCmd:oneArray];
+                [jsonStr appendString:rs];
+            }
+            
+        }
+        NSUInteger location = [jsonStr length]-1;
+        NSRange range = NSMakeRange(location, 1);
+        [jsonStr replaceCharactersInRange:range withString:@"]}"];
+        
+    }
+    else
+    {
+        [jsonStr appendString:@"]}"];
+    }
+    NSData *requestData = [jsonStr dataUsingEncoding:NSUTF8StringEncoding];
+    return requestData;
+}
+
++ (NSData *)getSetDefLinkageCmd:(long)flag devNo:(int) devNo devType:(int) devType devArray:(NSArray *)devArray
+{
+    NSString* rs = @"";
+    int count = [devArray count]-1;//减少调用次数
+    
+    NSString *jsonResult = [NSString stringWithFormat:@"{\"action\":\"setDef\",\"flag\":%ld,\"devType\":%d,\"devNo\":%d,\"linkage\":[",flag,devType,devNo];
+    
+    NSMutableString *jsonStr = [[NSMutableString alloc] initWithString:jsonResult];
+    if(count>0) {
+        for(int i=0; i<count; i++){
+            
+            if (![TcpCommand isBlankString:[devArray objectAtIndex:i]]) {
+                NSArray *oneArray =  [[devArray objectAtIndex:i]componentsSeparatedByString:@","];
+                rs = [self getCtrlCmd:oneArray];
+                [jsonStr appendString:rs];
+            }
+            
+        }
+        NSUInteger location = [jsonStr length]-1;
+        NSRange range = NSMakeRange(location, 1);
+        [jsonStr replaceCharactersInRange:range withString:@"]}"];
+        
+    }
+    else
+    {
+        [jsonStr appendString:@"]}"];
+    }
+    NSData *requestData = [jsonStr dataUsingEncoding:NSUTF8StringEncoding];
+    return requestData;
+}
+
++ (NSData *)getSetTimerLinkageCmd:(long)flag timerNo:(int) timerNo time:(NSString *) time enable:(int) enable cycle:(NSString *)cycle devArray:(NSArray *)devArray
+{
+    NSString* rs = @"";
+    int count = [devArray count]-1;//减少调用次数
+    
+    NSString *jsonResult = [NSString stringWithFormat:@"{\"action\":\"setTimer\",\"flag\":%ld,\"timerNo\":%d,\"time\":%@,\"enable\":%d,\"cycle\":%@,\"linkage\":[",flag,timerNo,time,enable,cycle];
+    
+    NSMutableString *jsonStr = [[NSMutableString alloc] initWithString:jsonResult];
+    if(count>0) {
+        for(int i=0; i<count; i++){
+            
+            if (![TcpCommand isBlankString:[devArray objectAtIndex:i]]) {
+                NSArray *oneArray =  [[devArray objectAtIndex:i]componentsSeparatedByString:@","];
+                rs = [self getCtrlCmd:oneArray];
+                [jsonStr appendString:rs];
+            }
+            
+        }
+        NSUInteger location = [jsonStr length]-1;
+        NSRange range = NSMakeRange(location, 1);
+        [jsonStr replaceCharactersInRange:range withString:@"]}"];
+        
+    }
+    else
+    {
+        [jsonStr appendString:@"]}"];
+    }
+    NSData *requestData = [jsonStr dataUsingEncoding:NSUTF8StringEncoding];
+    return requestData;
+}
 @end
